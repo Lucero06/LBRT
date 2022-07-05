@@ -1,0 +1,1 @@
+from lbrt.celery import app as celery_app

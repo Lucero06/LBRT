@@ -1,0 +1,40 @@
+*{
+	font-family: monospace;
+}
+body{
+	background-color: black;
+	color: white;
+}
+
+table{
+	border-collapse: collapse;
+}
+
+table td, th{
+	border: white 1px solid;
+	
+}
+
+input,textarea{
+	color: black;
+}
+
+#status{
+	font-weight: bolder;
+	
+}
+
+.on{
+	color: green;
+	
+}
+
+.off{
+	color: red;
+	
+}
+
+
+#status::before{
+	content: '•';
+}
