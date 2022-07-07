@@ -59,9 +59,18 @@ class TareaView(TemplateView):
             print(inst.args)     # arguments stored in .args
             print(inst)      
 
-        print(pools_on_fist_page)
-        context['pools']=pools_on_fist_page
-        
+        #print(pools_on_fist_page)
+        context['pools']=pools_on_fist_page['list']
+        print(len(pools_on_fist_page['list']))
+        total_pages=int(pools_on_fist_page['pagination']['totalPageCount'])
+        if ( total_pages > 1):
+            for i in range(total_pages-1):
+                print(i+1)
+                pools_on_page = private_api.get_my_pools(i+1, '')
+                #print(pools_on_page)
+                print(len(pools_on_page['list']))
+                context['pools']+=pools_on_page['list']
+        #print(context['pools'])
         #price=0.75
         limit=0.1
         #amount=0.001

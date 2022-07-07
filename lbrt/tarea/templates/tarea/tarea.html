@@ -55,9 +55,9 @@
         <td><label>Seleccionar Pool:</label></td>
         <td>
             <select id="pools">
-                {% for pool in pools.list %}
+                {% for pool in pools %}
                 <option value="{{pool.id}}///{{pool.algorithm}}///{{pool.stratumHostname}}">
-                    {{pool.name}} - {{pool.algorithm}}
+                    {{ forloop.counter }}: {{pool.name}} - {{pool.algorithm}}
                 </option>
                 {% endfor %}
             </select>

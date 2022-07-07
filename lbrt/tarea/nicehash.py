@@ -217,7 +217,8 @@ class private_api:
         return self.request('DELETE', '/main/api/v2/pool/' + pool_id, '', None)
 
     def get_my_pools(self, page, size):
-        return self.request('GET', '/main/api/v2/pools/', '', None)
+        query = "size={}&page={}".format(size, page)
+        return self.request('GET', '/main/api/v2/pools/', query, None)
 
     def get_hashpower_orderbook(self, algorithm):
         return self.request('GET', '/main/api/v2/hashpower/orderBook/', 'algorithm=' + algorithm, None )
