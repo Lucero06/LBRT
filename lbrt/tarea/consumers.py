@@ -30,6 +30,10 @@ class TareaConsumer(WebsocketConsumer):
         print('msj recibido')
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
+        async_to_sync(self.channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": '======= NUEVA TAREA =======' })
+        async_to_sync(self.channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": message })
         #NICEHASH
         if('pool' in message['params']):
             pool_id=message['params']['pool'].split('///')[0]

@@ -122,7 +122,27 @@ No<input type="radio" name="periodica" id="periodica_no" value="no">
 <button id="btnstart">Iniciar</button>
 </center>
 <br>
+<br><br>
+Log:<br>
+<span id="status"></span>
 
+<div id="info_blocks">
+
+    <textarea id="log-task" cols="100" rows="20" readonly></textarea>
+    <br>
+	<!--<label>Effort:</label>
+	<span id="seffort"></span><br>
+    <label>Numero de bloques</label>
+	<span id="num_bloques"></span><br>
+    <label>Sumatoria</label>
+	<span id="sum_luck_bloques"></span><br>
+    <label>Promedio Luck</label>
+	<span id="prom_luck_bloques"></span><br>
+    <label>Bloques encontrados:</label>
+    <span id="encontrados"></span><br>
+	<label>Id tarea </label><input type="text" name="task_id" id="task_id" readonly>
+    <label>Id orden </label><input type="text" name="order_id" id="order_id" readonly>-->
+</div>
 
 <!--{% for schedule in schedules %}
     {{schedule.every}}
@@ -179,29 +199,6 @@ No<input type="radio" name="periodica" id="periodica_no" value="no">
 </table>
 
 
-
-<br><br>
-Log:<br>
-<span id="status"></span>
-
-<div id="info_blocks">
-
-    <textarea id="log-task" cols="100" rows="20" readonly></textarea>
-    <br>
-	<!--<label>Effort:</label>
-	<span id="seffort"></span><br>
-    <label>Numero de bloques</label>
-	<span id="num_bloques"></span><br>
-    <label>Sumatoria</label>
-	<span id="sum_luck_bloques"></span><br>
-    <label>Promedio Luck</label>
-	<span id="prom_luck_bloques"></span><br>
-    <label>Bloques encontrados:</label>
-    <span id="encontrados"></span><br>
-	<label>Id tarea </label><input type="text" name="task_id" id="task_id" readonly>
-    <label>Id orden </label><input type="text" name="order_id" id="order_id" readonly>-->
-</div>
-
 <div id="tarea_actual">
 
 
@@ -229,12 +226,14 @@ Log:<br>
         var data = JSON.parse(e.data);
         var message = data['message'];  
 
+        document.querySelector('#log-task').innerHTML+='\n\n';
+        document.querySelector('#log-task').innerHTML+=JSON.stringify(message);
         document.querySelector('#status').innerHTML=message['status'];
         document.querySelector('#status').className=message['status'];
-
+        scroll();
 
         console.log(message)
-        if('encontrados' in message){
+        {% comment %} if('encontrados' in message){
             document.querySelector('#num_bloques').innerHTML=message['num_bloques'];
             document.querySelector('#sum_luck_bloques').innerHTML=message['sum_luck_bloques'];
             document.querySelector('#prom_luck_bloques').innerHTML=message['prom_luck_bloques'];
@@ -255,9 +254,9 @@ Log:<br>
                 'Bloques: '+message['encontrado']+'\n'+
                 '++++++++++++++++++++++'+'\n'
             );
-        }
+        } {% endcomment %}
         
-        scroll();
+        
 
     };
 

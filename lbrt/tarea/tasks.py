@@ -43,7 +43,14 @@ def chain_find_blocks(channel_name, pool_id, pool_algorithm, miner,amount, limit
 @shared_task
 def iniciar_orden(channel_name, limit, pool, algoritmo, amount):
     print('Tarea iniciar_orden iniciada... ')
-
+    async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": 
+                                            {
+                                                'status':'on',
+                                                'msj:':'Tarea iniciar_orden iniciada...'
+                                            
+                                            }
+                                      })
     public_api = nicehash.public_api('https://api2.nicehash.com', True)
     algorithms = public_api.get_algorithms()
     
@@ -66,24 +73,63 @@ def iniciar_orden(channel_name, limit, pool, algoritmo, amount):
     optimal_price=float(optimal_price)
     optimal_price=round(optimal_price,4)
     
+    print('algoritmo:')
+    print(algoritmo)
     print('PRECIO OPTIMO: ')
     print(optimal_price)
-
+    print('LIMITE:')
+    print(limit)
+    print('AMOUNT:')
+    print(amount)
+    print('POOL:')
+    print(pool)
+    print('algoritmos..')
+    print(algorithms)
+    async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": {
+                                            'status':'on',
+                                            'algoritmo':algoritmo,
+                                            'precio_optimo':optimal_price,
+                                            'limite':limit,
+                                            'amount':amount,
+                                            'pool_id':pool
+                                     } })
+    
 
     new_order = private_api.create_hashpower_order('EU', 'STANDARD', algoritmo, optimal_price, limit, amount, pool , algorithms)
     print(new_order)
     if ('errors' in new_order):
-        print('ERROR al crear orden '+new_order['errors'][0]['message'])
-        raise Exception('ERROR al crear la orden '+new_order['errors'][0]['message'])
+        #print('ERROR al crear orden '+new_order['errors'])
+
+        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": {
+                                            'status':'off',
+                                            'ERROR':new_order['errors']
+                                     } })
+        raise Exception('ERROR al crear la orden '+str(new_order['errors']))
         return 'error'
     else:
         order_id=new_order['id']
+        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": {
+                                            'status':'on',
+                                            'msj':'Orden creada...',
+                                            'oder_id':order_id
+                                     } })
         print('SUCCESS orden creada')
         return order_id
 
 @shared_task
 def loop_find_n_blocks(order_id,channel_name,miner=None):
     print('Tarea find n blocks iniciada... ')
+    async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": 
+                                            {
+                                                'status':'on',
+                                                'msj:':'Tarea find n blocks iniciada...',
+                                                'order_id':order_id
+                                            }
+                                      })
 
     #print('channel_name...')
     #print(channel_name)
@@ -102,7 +148,14 @@ def loop_find_n_blocks(order_id,channel_name,miner=None):
     for i in range(3):
         print('ciclo:')
         print(i)
-
+        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": 
+                                            {
+                                                'status':'on',
+                                                'ciclo:':i,
+                                                'order_id':order_id
+                                            }
+                                      })
         r = requests.get('https://etherscan.io/blocks', headers=headers)
 
         doc=html.fromstring(r.text)
@@ -116,6 +169,14 @@ def loop_find_n_blocks(order_id,channel_name,miner=None):
                 found+=1
         print('encontrados:')
         print(found)
+        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": 
+                                            {
+                                                'status':'on',
+                                                'encontrados:':found ,
+                                                'order_id':order_id                                           
+                                            }
+                                      })
         if(found>=n):
             return order_id
         #if (i<2):
@@ -129,6 +190,14 @@ def detener_orden(order_id,channel_name):
     print('Tarea detener orden iniciada... ')
     print('order id: ')
     print(order_id)
+    async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": 
+                                            {
+                                                'status':'on',
+                                                'msj':'Tarea detener orden iniciada... ',
+                                                'order_id':order_id
+                                            }
+                                      })
     #print('channel_name...')
     #print(channel_name)
     #nicehash
@@ -146,6 +215,15 @@ def detener_orden(order_id,channel_name):
     delete_hp_order = private_api.cancel_hashpower_order(order_id)
     print('Orden detenida: ')
     print(delete_hp_order)
+    async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": 
+                                            {
+                                                'status':'off',
+                                                'msj':'Orden detenida',
+                                                'order_id':order_id,
+                                                'result':delete_hp_order,
+                                            }
+                                      })
     return delete_hp_order
 
 
@@ -158,6 +236,14 @@ def loop_update_limit(channel_name, pool, algoritmo,limit_1,limit_2, amount, tim
     print('Tarea loop_update_limit iniciada... ')
     print('channel name: ')
     print(channel_name)
+    async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": 
+                                            {
+                                                'status':'off',
+                                                'msj':'Tarea loop_update_limit iniciada... '
+                                                
+                                            }
+                                      })
     #NICEHASH
 
     public_api = nicehash.public_api('https://api2.nicehash.com', True)
@@ -183,33 +269,82 @@ def loop_update_limit(channel_name, pool, algoritmo,limit_1,limit_2, amount, tim
     print('PRECIO OPTIMO: ')
     print(optimal_price)
 
+    async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": {
+                                            'status':'on',
+                                            'algoritmo':algoritmo,
+                                            'precio_optimo':optimal_price,
+                                            'limite':limit_1,
+                                            'limite_2':limit_2,
+                                            'amount':amount,
+                                            'pool_id':pool
+                                     } })
+
     new_order = private_api.create_hashpower_order('EU', 'STANDARD', algoritmo, optimal_price, limit, amount, pool , algorithms)
     print(new_order)
     if ('errors' in new_order):
-        raise Exception('ERROR al crear la orden: '+new_order['errors'][0]['message'])
+        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": {
+                                            'status':'off',
+                                            'ERROR':new_order['errors']
+                                     } })
+        raise Exception('ERROR al crear la orden: '+str(new_order['errors']))
         print('ERROR al crear orden')
     else:
         order_id=new_order['id']
+        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": {
+                                            'status':'on',
+                                            'msj':'Orden creada...',
+                                            'oder_id':order_id
+                                     } })
         print('SUCCESS orden creada')
 
     time.sleep(float(time_limit)*60)
     limit=limit_2
     update=private_api.set_limit_hashpower_order(order_id, limit, algoritmo, algorithms)
     print(update)
+    async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": {
+                                            'status':'on',
+                                            'msj':'Limite actualizado',
+                                            'limite':limit,
+                                            'order_id':order_id
+                                     } })
     time.sleep(float(time_limit)*60)
 
     for i in range(9):
         limit=limit_1
         update=private_api.set_limit_hashpower_order(order_id, limit, algoritmo, algorithms)
         print(update)
+        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": {
+                                            'status':'on',
+                                            'msj':'Limite actualizado',
+                                            'limite':limit,
+                                            'order_id':order_id
+                                     } })
         time.sleep(float(time_limit)*60)
         limit=limit_2
         update=private_api.set_limit_hashpower_order(order_id, limit, algoritmo, algorithms)
+        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": {
+                                            'status':'on',
+                                            'msj':'Limite actualizado',
+                                            'limite':limit,
+                                            'order_id':order_id
+                                     } })
         print(update)
         time.sleep(float(time_limit)*60)
 
     delete_hp_order = private_api.cancel_hashpower_order(order_id)
     print('CANCELAR orden ')
+    async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": {
+                                            'status':'off',
+                                            'msj':'Orden Cancelada',
+                                            'order_id':order_id
+                                     } })
     print(delete_hp_order)
 
     return 'ok'
