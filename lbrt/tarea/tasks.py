@@ -61,10 +61,6 @@ def iniciar_orden(channel_name, limit, pool, algoritmo, amount):
         key, 
         secret, 
         True)
-    #price=0.6385
-    #limit=0.1
-    #amount=0.001
-    #algoritmo='DAGGERHASHIMOTO'
     
     optimal_price=public_api.get_order_optimal_price('EU',algoritmo)
     optimal_price=optimal_price['price']
@@ -99,7 +95,6 @@ def iniciar_orden(channel_name, limit, pool, algoritmo, amount):
     new_order = private_api.create_hashpower_order('EU', 'STANDARD', algoritmo, optimal_price, limit, amount, pool , algorithms)
     print(new_order)
     if ('errors' in new_order):
-        #print('ERROR al crear orden '+new_order['errors'])
 
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": {
@@ -114,7 +109,7 @@ def iniciar_orden(channel_name, limit, pool, algoritmo, amount):
                                         "message": {
                                             'status':'on',
                                             'msj':'Orden creada...',
-                                            'oder_id':order_id
+                                            'order_id':order_id
                                      } })
         print('SUCCESS orden creada')
         return order_id
@@ -296,7 +291,7 @@ def loop_update_limit(channel_name, pool, algoritmo,limit_1,limit_2, amount, tim
                                         "message": {
                                             'status':'on',
                                             'msj':'Orden creada...',
-                                            'oder_id':order_id
+                                            'order_id':order_id
                                      } })
         print('SUCCESS orden creada')
 
