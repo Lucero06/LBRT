@@ -91,7 +91,7 @@ class TareaView(TemplateView):
                 task.last_run_at=task.last_run_at.astimezone(timezone).strftime('%H:%M')
         #print(schedules.count())
         #print(PeriodicTask.objects.values())
-        #print(TaskResult.objects.values('result'))
+        #print(TaskResult.objects.values())
         #tasks_results=TaskResult.objects.all().values('task_id').distinct()
 
         tasks_results=TaskResult.objects.order_by('-id').all()[:5]

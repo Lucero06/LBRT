@@ -5,7 +5,9 @@ body{
 	background-color: black;
 	color: white;
 }
-
+#log-task{
+	width: 100%;
+}
 table{
 	border-collapse: collapse;
 }

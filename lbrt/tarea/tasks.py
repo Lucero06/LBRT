@@ -21,6 +21,8 @@ from celery.contrib.abortable import AbortableTask
 
 from decouple import config
 
+from datetime import datetime
+
 channel_layer = get_channel_layer()
 
 
@@ -46,8 +48,9 @@ def iniciar_orden(channel_name, limit, pool, algoritmo, amount):
     async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": 
                                             {
+                                                'log_time':str(datetime.now()),
                                                 'status':'on',
-                                                'msj:':'Tarea iniciar_orden iniciada...'
+                                                'msj:': 'Tarea iniciar_orden iniciada...'
                                             
                                             }
                                       })
@@ -80,9 +83,10 @@ def iniciar_orden(channel_name, limit, pool, algoritmo, amount):
     print('POOL:')
     print(pool)
     print('algoritmos..')
-    print(algorithms)
+    #print(algorithms)
     async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": {
+                                            'log_time':str(datetime.now()),
                                             'status':'on',
                                             'algoritmo':algoritmo,
                                             'precio_optimo':optimal_price,
@@ -98,6 +102,7 @@ def iniciar_orden(channel_name, limit, pool, algoritmo, amount):
 
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": {
+                                            'log_time':str(datetime.now()),
                                             'status':'off',
                                             'ERROR':new_order['errors']
                                      } })
@@ -107,6 +112,7 @@ def iniciar_orden(channel_name, limit, pool, algoritmo, amount):
         order_id=new_order['id']
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": {
+                                            'log_time':str(datetime.now()),
                                             'status':'on',
                                             'msj':'Orden creada...',
                                             'order_id':order_id
@@ -120,6 +126,7 @@ def loop_find_n_blocks(order_id,channel_name,miner=None):
     async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": 
                                             {
+                                                'log_time':str(datetime.now()),
                                                 'status':'on',
                                                 'msj:':'Tarea find n blocks iniciada...',
                                                 'order_id':order_id
@@ -146,6 +153,7 @@ def loop_find_n_blocks(order_id,channel_name,miner=None):
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": 
                                             {
+                                                'log_time':str(datetime.now()),
                                                 'status':'on',
                                                 'ciclo:':i,
                                                 'order_id':order_id
@@ -167,6 +175,7 @@ def loop_find_n_blocks(order_id,channel_name,miner=None):
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": 
                                             {
+                                                'log_time':str(datetime.now()),
                                                 'status':'on',
                                                 'encontrados:':found ,
                                                 'order_id':order_id                                           
@@ -188,6 +197,7 @@ def detener_orden(order_id,channel_name):
     async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": 
                                             {
+                                                'log_time':str(datetime.now()),
                                                 'status':'on',
                                                 'msj':'Tarea detener orden iniciada... ',
                                                 'order_id':order_id
@@ -213,6 +223,7 @@ def detener_orden(order_id,channel_name):
     async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": 
                                             {
+                                                'log_time':str(datetime.now()),
                                                 'status':'off',
                                                 'msj':'Orden detenida',
                                                 'order_id':order_id,
@@ -234,6 +245,7 @@ def loop_update_limit(channel_name, pool, algoritmo,limit_1,limit_2, amount, tim
     async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": 
                                             {
+                                                'log_time':str(datetime.now()),
                                                 'status':'off',
                                                 'msj':'Tarea loop_update_limit iniciada... '
                                                 
@@ -266,6 +278,7 @@ def loop_update_limit(channel_name, pool, algoritmo,limit_1,limit_2, amount, tim
 
     async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": {
+                                            'log_time':str(datetime.now()),
                                             'status':'on',
                                             'algoritmo':algoritmo,
                                             'precio_optimo':optimal_price,
@@ -280,6 +293,7 @@ def loop_update_limit(channel_name, pool, algoritmo,limit_1,limit_2, amount, tim
     if ('errors' in new_order):
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": {
+                                            'log_time':str(datetime.now()),
                                             'status':'off',
                                             'ERROR':new_order['errors']
                                      } })
@@ -289,6 +303,7 @@ def loop_update_limit(channel_name, pool, algoritmo,limit_1,limit_2, amount, tim
         order_id=new_order['id']
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": {
+                                            'log_time':str(datetime.now()),
                                             'status':'on',
                                             'msj':'Orden creada...',
                                             'order_id':order_id
@@ -301,6 +316,7 @@ def loop_update_limit(channel_name, pool, algoritmo,limit_1,limit_2, amount, tim
     print(update)
     async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": {
+                                            'log_time':str(datetime.now()),
                                             'status':'on',
                                             'msj':'Limite actualizado',
                                             'limite':limit,
@@ -314,6 +330,7 @@ def loop_update_limit(channel_name, pool, algoritmo,limit_1,limit_2, amount, tim
         print(update)
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": {
+                                            'log_time':str(datetime.now()),
                                             'status':'on',
                                             'msj':'Limite actualizado',
                                             'limite':limit,
@@ -324,6 +341,7 @@ def loop_update_limit(channel_name, pool, algoritmo,limit_1,limit_2, amount, tim
         update=private_api.set_limit_hashpower_order(order_id, limit, algoritmo, algorithms)
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": {
+                                            'log_time':str(datetime.now()),
                                             'status':'on',
                                             'msj':'Limite actualizado',
                                             'limite':limit,
@@ -336,6 +354,7 @@ def loop_update_limit(channel_name, pool, algoritmo,limit_1,limit_2, amount, tim
     print('CANCELAR orden ')
     async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": {
+                                            'log_time':str(datetime.now()),
                                             'status':'off',
                                             'msj':'Orden Cancelada',
                                             'order_id':order_id

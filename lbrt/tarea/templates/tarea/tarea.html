@@ -128,7 +128,7 @@ Log:<br>
 
 <div id="info_blocks">
 
-    <textarea id="log-task" cols="100" rows="20" readonly></textarea>
+    <textarea id="log-task" cols="150" rows="20" readonly></textarea>
     <br>
 	<!--<label>Effort:</label>
 	<span id="seffort"></span><br>
@@ -292,11 +292,14 @@ Log:<br>
             tipo='blocks_miner';
         }
         else */
+        tipo_nombre=''
         if(document.querySelector('#find_blocks').checked==true){
-            tipo='find_blocks'
+            tipo='add_tarea'
+            tipo_nombre='find_blocks'
         }   
         else if (document.querySelector('#cicle_limit').checked==true){
-            tipo='ciclo_limit'    
+            tipo='add_tarea'
+            tipo_nombre='ciclo_limit'    
         }
         else{
             tipo='effort';
@@ -309,6 +312,7 @@ Log:<br>
         //tipo='find_blocks'
         //tipo='ciclo_limit'
         params={
+                    'tipo_nombre':tipo_nombre,
                     'inicio':inicio,
                     'amount':amount,
                     'miner_find': miner_find,
