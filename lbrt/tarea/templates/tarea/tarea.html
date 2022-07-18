@@ -149,11 +149,12 @@ Log:<br>
     {{schedule.period}}
     {{schedule.last_run_at}}
 {% endfor%}-->
-<h4>Tareas peri&oacute;dicas</h4>
+<h4>Tareas</h4>
 <table>
     <tr>
         <th>Status</th>
         <th>NOmbre</th>
+        <th>Periodica </th>
         <th>Inicio</th>
         <th>Cada</th>
         <th>Intervalo</th>
@@ -165,6 +166,9 @@ Log:<br>
 <tr>
     <td>{{task.enabled}}</td>
     <td>{{task.name}}</td>
+    <td>
+        {% if task.one_off == True %} No {% else %} Si {% endif %}
+    </td>
     <td>{{task.last_run_at}}</td>
     <td>{{task.interval.every}}</td>
     <td>{{task.interval.period}}</td>

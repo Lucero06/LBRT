@@ -87,7 +87,8 @@ class TareaView(TemplateView):
         timezone = pytz.timezone("America/Mexico_City")
         for task in periodic_tasks:
             #print(task.last_run_at.astimezone(timezone).strftime('%H:%M'))
-            task.last_run_at=task.last_run_at.astimezone(timezone).strftime('%H:%M')
+            if (task.last_run_at is not None):
+                task.last_run_at=task.last_run_at.astimezone(timezone).strftime('%H:%M')
         #print(schedules.count())
         #print(PeriodicTask.objects.values())
         #print(TaskResult.objects.values('result'))
