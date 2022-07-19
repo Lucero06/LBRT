@@ -256,8 +256,53 @@ def loop_find_n_blocks_limit(order_id,channel_name,miner,limit, algoritmo):
     print(miner)
     n=2
     found=0
-    minutos=6
+    minutos=3
     time.sleep(minutos*60)
+    
+    #loop
+    minutos_loop=2
+    segundos_ciclo=30
+    ciclos=(minutos_loop*60)/segundos_ciclo
+    
+    for i in range(int(ciclos)):
+        print('ciclo:')
+        print(i)
+        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": 
+                                            {
+                                                'log_time':str(datetime.now()),
+                                                'status':'on',
+                                                'ciclo:':i,
+                                                'order_id':order_id
+                                            }
+                                      })
+        r = requests.get('https://etherscan.io/blocks', headers=headers)
+
+        doc=html.fromstring(r.text)
+        equis=doc.cssselect('tbody tr')
+        #found=0
+        for row in equis:
+            #print('found')
+            found_miner=row[5].text_content()
+            #print(found_miner.lower())
+            if(found_miner.lower()==miner.lower().strip()):
+                found+=1
+        print('encontrados:')
+        print(found)
+        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": 
+                                            {
+                                                'log_time':str(datetime.now()),
+                                                'status':'on',
+                                                'encontrados:':found ,
+                                                'order_id':order_id                                           
+                                            }
+                                      })
+        
+        time.sleep(segundos_ciclo)
+    if(found==0):
+        return order_id
+
 
     #reducir limite
     limit=limit-(limit*0.9)
@@ -269,7 +314,8 @@ def loop_find_n_blocks_limit(order_id,channel_name,miner,limit, algoritmo):
 
     update=private_api.set_limit_hashpower_order(order_id, limit, algoritmo, algorithms)
     print(update)
-    time.sleep(1.5*60)
+    minutos=1.5
+    time.sleep(minutos*60)
     return order_id
 
 
