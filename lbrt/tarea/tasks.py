@@ -162,7 +162,12 @@ def loop_find_n_blocks(order_id,channel_name,miner=None):
     minutos=3
     time.sleep(minutos*60)
 
-    for i in range(3):
+
+    minutos_loop=2
+    segundos_ciclo=30
+    ciclos=(minutos_loop*60)/segundos_ciclo
+
+    for i in range(int(ciclos)):
         print('ciclo:')
         print(i)
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
@@ -202,7 +207,7 @@ def loop_find_n_blocks(order_id,channel_name,miner=None):
         if(found>=n):
             return order_id
 
-        time.sleep(30)
+        time.sleep(segundos_ciclo)
 
     return order_id
 
