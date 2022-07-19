@@ -13,18 +13,6 @@
 <br>
 
 <table>
-    <!--<tr>
-        <td><label>Inicio</label> </td>
-        <td><input id="inicio_inp" type="time" name="inicio" value="{{hora}}:{{minuto}}"></td>
-    </tr>
-    <tr>
-        <td><label>Limit</label> </td>
-        <td><input id="limit_inp" type="number" step="any" name="limit" value="{{limit}}"> THs</td>
-    </tr> 
-    <tr>
-        <td><label>Time On</label></td>
-        <td><input id="timeon_inp" type="number" name="tiempo" value="1"> min<br></td>
-    </tr>-->
     <tr>
         <td>Time (Ciclo actualizar limit)</td>
         <td>
@@ -78,11 +66,6 @@
 
 <div>
     <form action="#">
-    <!--<input type="radio" name="tipo" id="effort_inp" value="efforton"> 
-    <label>Effort < 100</label>
-    
-    <input type="radio" name="tipo" id="blocks_inp" value="blockson"> 
-    <label>Etherscan bloques</label> -->
 
     <label>Seleccionar tarea:</label>
     <input type="radio" name="tipo" id="find_blocks" value="findon" checked> 
@@ -98,9 +81,6 @@
 
 <br>
 
-<!-- <button id="btnstart">Iniciar</button>-->
-<!--<button id="btndetener">Detener tarea actual</button>-->
-<!--<button id="btnlimpiar">Limpiar parametros</button>-->
 </div>
 
 Programar tarea periódica:
@@ -133,18 +113,6 @@ Log:<br>
 
     <textarea id="log-task" cols="150" rows="20" readonly></textarea>
     <br>
-	<!--<label>Effort:</label>
-	<span id="seffort"></span><br>
-    <label>Numero de bloques</label>
-	<span id="num_bloques"></span><br>
-    <label>Sumatoria</label>
-	<span id="sum_luck_bloques"></span><br>
-    <label>Promedio Luck</label>
-	<span id="prom_luck_bloques"></span><br>
-    <label>Bloques encontrados:</label>
-    <span id="encontrados"></span><br>
-	<label>Id tarea </label><input type="text" name="task_id" id="task_id" readonly>
-    <label>Id orden </label><input type="text" name="order_id" id="order_id" readonly>-->
 </div>
 
 <!--{% for schedule in schedules %}
@@ -332,8 +300,6 @@ Log:<br>
             periodica='si';
         }
 
-        //tipo='find_blocks'
-        //tipo='ciclo_limit'
         params={
                     'tipo_nombre':tipo_nombre,
                     'inicio':inicio,
@@ -358,27 +324,7 @@ Log:<br>
         
     };
 
-    /*document.querySelector('#btndetener').onclick = function(e) {
-        //var messageInputDom = document.querySelector('#tarea-message-input');
-        //var message = messageInputDom.value;
-        console.log('test');
-        tareaSocket.send(JSON.stringify({
-            'message': {
-            	'detener':'true',
-            	'task_id': document.querySelector('#task_id').value
-            	
-            }
-        }));
-
-        //messageInputDom.value = '';
-    };*/
-
-
-    /*document.querySelector('#btnlimpiar').onclick=function(e){
-        document.querySelector('#inicio_inp').value='';
-        document.querySelector('#limit_inp').value='';
-        document.querySelector('#timeon_inp').value='';
-    }*/
+    
 
     function del_task(id,periodica_yn){
         tareaSocket.send(JSON.stringify({
