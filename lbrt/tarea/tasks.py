@@ -185,9 +185,9 @@ def loop_find_n_blocks(order_id,channel_name,miner=None):
         equis=doc.cssselect('tbody tr')
         
         for row in equis:
-            #print('found')
+            
             found_miner=row[5].text_content()
-            #print(found_miner.lower())
+            
             if(found_miner.lower()==miner.lower().strip()):
                 id_block=row[1].text_content()
                 if str(id_block) not in bloques:
@@ -340,7 +340,7 @@ def loop_find_n_blocks_limit(order_id,channel_name,miner,limit, algoritmo):
                     found+=1
 
         print('encontrados:')
-        print(len(bloques))
+        print(found)
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": 
                                             {
