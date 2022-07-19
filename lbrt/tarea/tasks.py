@@ -269,7 +269,7 @@ def loop_find_n_blocks_limit(order_id,channel_name,miner,limit, algoritmo):
 
     update=private_api.set_limit_hashpower_order(order_id, limit, algoritmo, algorithms)
     print(update)
-
+    time.sleep(1.5*60)
     return order_id
 
 
