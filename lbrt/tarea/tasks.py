@@ -139,8 +139,27 @@ def loop_find_n_blocks(order_id,channel_name,miner=None):
     print(miner)
     n=2
     found=0
-    minutos=3
+
+    bloques=[]
+
+    #consultar bloques
+    r = requests.get('https://etherscan.io/blocks', headers=headers)
+    doc=html.fromstring(r.text)
+    equis=doc.cssselect('tbody tr')
+
+    for row in equis:
+        #print('found')
+        found_miner=row[5].text_content()
+        #print(found_miner.lower())
+        if(found_miner.lower()==miner.lower().strip()):
+            id_block=row[1].text_content()
+            if str(id_block) not in bloques:
+                bloques.append(str(id_block))
     
+
+    #end consultar bloques
+
+    minutos=3
     time.sleep(minutos*60)
 
     for i in range(3):
@@ -165,7 +184,10 @@ def loop_find_n_blocks(order_id,channel_name,miner=None):
             found_miner=row[5].text_content()
             #print(found_miner.lower())
             if(found_miner.lower()==miner.lower().strip()):
-                found+=1
+                id_block=row[1].text_content()
+                if str(id_block) not in bloques:
+                    bloques.append(str(id_block))
+                    found+=1
         print('encontrados:')
         print(found)
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
@@ -256,6 +278,26 @@ def loop_find_n_blocks_limit(order_id,channel_name,miner,limit, algoritmo):
     print(miner)
     n=2
     found=0
+    bloques=[]
+
+    #consultar bloques
+    r = requests.get('https://etherscan.io/blocks', headers=headers)
+    doc=html.fromstring(r.text)
+    equis=doc.cssselect('tbody tr')
+
+    for row in equis:
+        #print('found')
+        found_miner=row[5].text_content()
+        #print(found_miner.lower())
+        if(found_miner.lower()==miner.lower().strip()):
+            id_block=row[1].text_content()
+            if str(id_block) not in bloques:
+                bloques.append(str(id_block))
+    
+
+    #end consultar bloques
+
+
     minutos=3
     time.sleep(minutos*60)
     
@@ -286,15 +328,21 @@ def loop_find_n_blocks_limit(order_id,channel_name,miner,limit, algoritmo):
             found_miner=row[5].text_content()
             #print(found_miner.lower())
             if(found_miner.lower()==miner.lower().strip()):
-                found+=1
+                id_block=row[1].text_content()
+                
+                if str(id_block) not in bloques:
+                    bloques.append(str(id_block))
+                    found+=1
+
         print('encontrados:')
-        print(found)
+        print(len(bloques))
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": 
                                             {
                                                 'log_time':str(datetime.now()),
                                                 'status':'on',
                                                 'encontrados:':found ,
+                                                'bloques':bloques,
                                                 'order_id':order_id                                           
                                             }
                                       })
