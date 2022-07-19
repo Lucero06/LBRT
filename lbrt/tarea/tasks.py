@@ -38,6 +38,7 @@ secret=config('SECRET_NC')
 @app.task
 def chain_find_blocks(channel_name, pool_id, pool_algorithm, miner,amount, limit):
     res = (iniciar_orden.s(str(channel_name), limit,pool_id,pool_algorithm, amount) | loop_find_n_blocks.s(str(channel_name),miner) | detener_orden.s(str(channel_name))  )()
+
     #res =(test_task.s() | test_task_2.s() | test_task_3.s())()
     return res
 #
@@ -57,8 +58,6 @@ def iniciar_orden(channel_name, limit, pool, algoritmo, amount):
     public_api = nicehash.public_api('https://api2.nicehash.com', True)
     algorithms = public_api.get_algorithms()
     
-    
-
     private_api = nicehash.private_api(host, 
         organization_id, 
         key, 
@@ -133,19 +132,16 @@ def loop_find_n_blocks(order_id,channel_name,miner=None):
                                             }
                                       })
 
-    #print('channel_name...')
-    #print(channel_name)
-    #print('order_id...')
-    #print(order_id)
-    
+
     headers = {"User-Agent":"PostmanRuntime/7.29.0", "Accept":"*/*"}
 
     print('miner:')
     print(miner)
     n=2
     found=0
-
-    time.sleep(3*60)
+    minutos=3
+    
+    time.sleep(minutos*60)
 
     for i in range(3):
         print('ciclo:')
@@ -183,7 +179,7 @@ def loop_find_n_blocks(order_id,channel_name,miner=None):
                                       })
         if(found>=n):
             return order_id
-        #if (i<2):
+
         time.sleep(30)
 
     return order_id
@@ -203,8 +199,6 @@ def detener_orden(order_id,channel_name):
                                                 'order_id':order_id
                                             }
                                       })
-    #print('channel_name...')
-    #print(channel_name)
     #nicehash
     
     public_api = nicehash.public_api('https://api2.nicehash.com', True)
@@ -234,9 +228,53 @@ def detener_orden(order_id,channel_name):
 
 
 
+@app.task
+def chain_find_blocks_limit(channel_name, pool_id, pool_algorithm, miner,amount, limit):
+    res = (iniciar_orden.s(str(channel_name), limit,pool_id,pool_algorithm, amount) | loop_find_n_blocks_limit.s(str(channel_name),miner, limit, pool_algorithm) | detener_orden.s(str(channel_name))  )()
+    #res =(test_task.s() | test_task_2.s() | test_task_3.s())()
+    return res
+#
+
+
+#tarea encontrar bloques w limit (?)
+@shared_task
+def loop_find_n_blocks_limit(order_id,channel_name,miner,limit, algoritmo):
+    print('Tarea find n blocks iniciada... ')
+    async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": 
+                                            {
+                                                'log_time':str(datetime.now()),
+                                                'status':'on',
+                                                'msj:':'Tarea find n blocks w limit iniciada...',
+                                                'order_id':order_id
+                                            }
+                                      })
+
+    headers = {"User-Agent":"PostmanRuntime/7.29.0", "Accept":"*/*"}
+
+    print('miner:')
+    print(miner)
+    n=2
+    found=0
+    minutos=6
+    time.sleep(minutos*60)
+
+    #reducir limite
+    limit=limit-(limit*0.9)
+    print('limite:')
+    print(limit)
+
+    public_api = nicehash.public_api('https://api2.nicehash.com', True)
+    algorithms = public_api.get_algorithms()
+
+    update=private_api.set_limit_hashpower_order(order_id, limit, algoritmo, algorithms)
+    print(update)
+
+    return order_id
+
+
 
 #tarea ciclo actualiza limit
-
 @shared_task
 def loop_update_limit(channel_name, pool, algoritmo,limit_1,limit_2, amount, time_limit):
     print('Tarea loop_update_limit iniciada... ')
@@ -262,17 +300,12 @@ def loop_update_limit(channel_name, pool, algoritmo,limit_1,limit_2, amount, tim
         secret, 
         True)
 
-    #price=0.6385
     print('time limit:')
     print(float(time_limit))
     limit=limit_1
-    #amount=0.001
-    #algoritmo='DAGGERHASHIMOTO'
     
     optimal_price=public_api.get_order_optimal_price('EU',algoritmo)
-    #print(optimal_price)
     optimal_price=optimal_price['price']
-    #optimal_price=round(optimal_price,4)
     print('PRECIO OPTIMO: ')
     print(optimal_price)
 

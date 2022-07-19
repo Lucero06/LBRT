@@ -90,6 +90,9 @@
     
     <input type="radio" name="tipo" id="cicle_limit" value="cicleon" > 
     <label>Ciclo actualizar limit</label>
+
+    <input type="radio" name="tipo" id="find_block_limit" valu="findlimiton">
+    <label> Ciclo limit (-90%) </label>
     </form>
 </div>
 
@@ -300,6 +303,10 @@ Log:<br>
         else if (document.querySelector('#cicle_limit').checked==true){
             tipo='add_tarea'
             tipo_nombre='ciclo_limit'    
+        }
+        else if (document.querySelector('#find_block_limit').checked==true){
+            tipo='add_tarea'
+            tipo_nombre='find_blocks_limit'
         }
         else{
             tipo='effort';

@@ -150,6 +150,44 @@ class TareaConsumer(WebsocketConsumer):
                 #     #print(result.get())
                 #     #print(result.parent.get())
                 #     #print(result.parent.parent.get())
+            elif(tipo_nombre=='find_blocks_limit'):
+
+                name_tarea='find_blocks_limit'
+                regex='^'+name_tarea+'(_[0-9]+)*$'
+
+                periodic_tasks=PeriodicTask.objects.filter(name__regex=regex).all()
+                num_periodic_tasks=len(periodic_tasks)
+
+                if (num_periodic_tasks>0):
+                    name_last_task=PeriodicTask.objects.filter(name__regex=regex).last().name
+                    number_last_task=name_last_task.split('_')[-1]
+                    if not(number_last_task.isnumeric()):
+                        number_last_task=1
+
+                    name_tarea=name_tarea+'_'+str(int(number_last_task)+1)
+                print(name_tarea)
+                if(periodica=='si'):
+                    cp=PeriodicTask.objects.create(
+                    last_run_at=last_run_at,
+                    interval=schedule,                  
+                    name=name_tarea,
+                    task='tarea.tasks.chain_find_blocks_limit', 
+                    args=json.dumps([str(self.channel_name),pool_id, pool_algorithm,find_miner, amount,limite])
+                    )
+                else:
+                    cp=PeriodicTask.objects.create(
+                    one_off=True,
+                    last_run_at=last_run_at,
+                    interval=schedule,                  
+                    name=name_tarea,
+                    task='tarea.tasks.chain_find_blocks_limit', 
+                    args=json.dumps([str(self.channel_name),pool_id, pool_algorithm,find_miner, amount,limite])
+                    )
+
+                print('Tarea periodica creada: ')
+                print(cp)
+                print(cp.id)
+                
 
             elif (tipo_nombre=='ciclo_limit'):
 
