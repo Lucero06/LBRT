@@ -246,7 +246,7 @@ def loop_update_limit(channel_name, pool, algoritmo,limit_1,limit_2, amount, tim
                                         "message": 
                                             {
                                                 'log_time':str(datetime.now()),
-                                                'status':'off',
+                                                'status':'on',
                                                 'msj':'Tarea loop_update_limit iniciada... '
                                                 
                                             }
