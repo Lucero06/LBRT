@@ -145,7 +145,7 @@ def loop_find_n_blocks(order_id,channel_name,miner=None):
     n=2
     found=0
 
-    time.sleep(4*60)
+    time.sleep(3*60)
 
     for i in range(3):
         print('ciclo:')
@@ -163,7 +163,7 @@ def loop_find_n_blocks(order_id,channel_name,miner=None):
 
         doc=html.fromstring(r.text)
         equis=doc.cssselect('tbody tr')
-        found=0
+        #found=0
         for row in equis:
             #print('found')
             found_miner=row[5].text_content()
@@ -184,7 +184,7 @@ def loop_find_n_blocks(order_id,channel_name,miner=None):
         if(found>=n):
             return order_id
         #if (i<2):
-        time.sleep(2*60)
+        time.sleep(30)
 
     return order_id
 
