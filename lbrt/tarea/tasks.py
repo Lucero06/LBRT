@@ -183,7 +183,7 @@ def loop_find_n_blocks(order_id,channel_name,miner=None):
 
         doc=html.fromstring(r.text)
         equis=doc.cssselect('tbody tr')
-        found=0
+        
         for row in equis:
             #print('found')
             found_miner=row[5].text_content()
