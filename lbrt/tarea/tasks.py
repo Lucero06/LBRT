@@ -152,7 +152,7 @@ def loop_find_n_blocks(order_id,channel_name,miner=None):
         found_miner=row[5].text_content()
         #print(found_miner.lower())
         if(found_miner.lower()==miner.lower().strip()):
-            id_block=row[1].text_content()
+            id_block=row[0][0].text_content()
             if str(id_block) not in bloques:
                 bloques.append(str(id_block))
     
@@ -189,7 +189,7 @@ def loop_find_n_blocks(order_id,channel_name,miner=None):
             found_miner=row[5].text_content()
             
             if(found_miner.lower()==miner.lower().strip()):
-                id_block=row[1].text_content()
+                id_block=row[0][0].text_content()
                 if str(id_block) not in bloques:
                     bloques.append(str(id_block))
                     found+=1
@@ -295,7 +295,7 @@ def loop_find_n_blocks_limit(order_id,channel_name,miner,limit, algoritmo):
         found_miner=row[5].text_content()
         #print(found_miner.lower())
         if(found_miner.lower()==miner.lower().strip()):
-            id_block=row[1].text_content()
+            id_block=row[0][0].text_content()
             if str(id_block) not in bloques:
                 bloques.append(str(id_block))
     
@@ -333,7 +333,7 @@ def loop_find_n_blocks_limit(order_id,channel_name,miner,limit, algoritmo):
             found_miner=row[5].text_content()
             #print(found_miner.lower())
             if(found_miner.lower()==miner.lower().strip()):
-                id_block=row[1].text_content()
+                id_block=row[0][0].text_content()
                 
                 if str(id_block) not in bloques:
                     bloques.append(str(id_block))
@@ -537,7 +537,7 @@ def loop_find_n_blocks_stop(order_id,channel_name,miner=None):
         found_miner=row[5].text_content()
         #print(found_miner.lower())
         if(found_miner.lower()==miner.lower().strip()):
-            id_block=row[1].text_content()
+            id_block=row[0][0].text_content()
             if str(id_block) not in bloques:
                 bloques.append(str(id_block))
     
@@ -570,7 +570,7 @@ def loop_find_n_blocks_stop(order_id,channel_name,miner=None):
             found_miner=row[5].text_content()
             
             if(found_miner.lower()==miner.lower().strip()):
-                id_block=row[1].text_content()
+                id_block=row[0][0].text_content()
                 if str(id_block) not in bloques:
                     bloques.append(str(id_block))
                     found+=1
