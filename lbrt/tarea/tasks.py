@@ -496,9 +496,101 @@ def loop_update_limit(channel_name, pool, algoritmo,limit_1,limit_2, amount, tim
     return 'ok'
 
 
+@app.task
+def chain_find_blocks_stop(channel_name, pool_id, pool_algorithm, miner,amount, limit):
+    res = (iniciar_orden.s(str(channel_name), limit,pool_id,pool_algorithm, amount) | loop_find_n_blocks_limit.s(str(channel_name),miner, limit, pool_algorithm) | detener_orden.s(str(channel_name))  )()
+    #res =(test_task.s() | test_task_2.s() | test_task_3.s())()
+    return res
+#
 
 
+@shared_task
+def loop_find_n_blocks_stop(order_id,channel_name,miner=None):
+    print('Tarea find n blocks iniciada... ')
+    async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": 
+                                            {
+                                                'log_time':str(datetime.now()),
+                                                'status':'on',
+                                                'msj:':'Tarea find n blocks iniciada...',
+                                                'order_id':order_id
+                                            }
+                                      })
 
+
+    headers = {"User-Agent":"PostmanRuntime/7.29.0", "Accept":"*/*"}
+
+    print('miner:')
+    print(miner)
+    n=1
+    found=0
+
+    bloques=[]
+
+    #consultar bloques
+    r = requests.get('https://etherscan.io/blocks', headers=headers)
+    doc=html.fromstring(r.text)
+    equis=doc.cssselect('tbody tr')
+
+    for row in equis:
+        #print('found')
+        found_miner=row[5].text_content()
+        #print(found_miner.lower())
+        if(found_miner.lower()==miner.lower().strip()):
+            id_block=row[1].text_content()
+            if str(id_block) not in bloques:
+                bloques.append(str(id_block))
+    
+
+    #end consultar bloques
+
+    minutos_loop=4
+    segundos_ciclo=30
+    ciclos=(minutos_loop*60)/segundos_ciclo
+
+    for i in range(int(ciclos)):
+        print('ciclo:')
+        print(i)
+        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": 
+                                            {
+                                                'log_time':str(datetime.now()),
+                                                'status':'on',
+                                                'ciclo:':i,
+                                                'order_id':order_id
+                                            }
+                                      })
+        r = requests.get('https://etherscan.io/blocks', headers=headers)
+
+        doc=html.fromstring(r.text)
+        equis=doc.cssselect('tbody tr')
+        
+        for row in equis:
+            
+            found_miner=row[5].text_content()
+            
+            if(found_miner.lower()==miner.lower().strip()):
+                id_block=row[1].text_content()
+                if str(id_block) not in bloques:
+                    bloques.append(str(id_block))
+                    found+=1
+        print('encontrados:')
+        print(found)
+        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": 
+                                            {
+                                                'log_time':str(datetime.now()),
+                                                'status':'on',
+                                                'encontrados:':found ,
+                                                'order_id':order_id                                           
+                                            }
+                                      })
+        if(found>=n):
+            return order_id
+
+        time.sleep(segundos_ciclo)
+
+    return order_id
 
 
 

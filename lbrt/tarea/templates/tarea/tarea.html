@@ -84,6 +84,10 @@
                 <input type="radio" name="tipo" id="find_block_limit" valu="findlimiton">
                 <label> Ciclo encontrar nuevos bloques (c/limit -90%) </label>
             </li>
+            <li>
+                <input type="radio" name="tipo" id="find_block_stop" valu="findstopon">
+                <label> Ciclo encontrar nuevos bloques (y detener) </label>
+            </li>
         </ul>
 
     </form>
@@ -290,18 +294,22 @@ Log:<br>
                 document.querySelector('#cicle_limit').checked
             );
         
-        tipo_nombre=''
+        tipo_nombre='';
         if(document.querySelector('#find_blocks').checked==true){
-            tipo='add_tarea'
-            tipo_nombre='find_blocks'
+            tipo='add_tarea';
+            tipo_nombre='find_blocks';
         }   
         else if (document.querySelector('#cicle_limit').checked==true){
-            tipo='add_tarea'
-            tipo_nombre='ciclo_limit'    
+            tipo='add_tarea';
+            tipo_nombre='ciclo_limit';
         }
         else if (document.querySelector('#find_block_limit').checked==true){
-            tipo='add_tarea'
-            tipo_nombre='find_blocks_limit'
+            tipo='add_tarea';
+            tipo_nombre='find_blocks_limit';
+        }
+        else if (document.querySelector('#find_block_stop').checked==true){
+            tipo='add_tarea';
+            tipo_nombre='find_blocks_stop';
         }
         else{
             tipo='effort';
