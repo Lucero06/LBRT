@@ -13,14 +13,9 @@
 <br>
 
 <table>
+   
     <tr>
-        <td>Time (Ciclo actualizar limit)</td>
-        <td>
-            <input type="number" name="tiempo_limit" value="20" id="time_limit"> Min
-        </td>
-    </tr>
-    <tr>
-        <td>Amount</td>
+        <td>*Amount</td>
         <td>
             <input type="number" step="any" name="amount" id="amount" value="0.001"> BTC
         </td>
@@ -32,7 +27,7 @@
         </td>
     </tr>
      <tr>
-        <td><label>Limit</label> </td>
+        <td><label>*Limit</label> </td>
         <td><input id="limit_inp" type="number" step="any" name="limit" value="{{limit}}"> THs</td>
     </tr> 
     <tr>
@@ -40,7 +35,7 @@
         <td><input id="limit_inp_2" type="number" step="any" name="limit_2" value="0.01"> THs</td>
     </tr> 
     <tr>
-        <td><label>Seleccionar Pool:</label></td>
+        <td><label>*Seleccionar Pool:</label></td>
         <td>
             <select id="pools">
                 {% for pool in pools %}
@@ -52,6 +47,12 @@
 
         </td>
 
+    </tr>
+    <tr>
+        <td>Time (Ciclo actualizar limit)</td>
+        <td>
+            <input type="number" name="tiempo_limit" value="20" id="time_limit"> Min
+        </td>
     </tr>
 </table>
 
@@ -65,18 +66,28 @@
 
 
 <div>
+    
     <form action="#">
 
     <label>Seleccionar tarea:</label>
-    <input type="radio" name="tipo" id="find_blocks" value="findon" checked> 
-    <label>Ciclo encontrar nuevos bloques</label>
-    
-    <input type="radio" name="tipo" id="cicle_limit" value="cicleon" > 
-    <label>Ciclo actualizar limit</label>
 
-    <input type="radio" name="tipo" id="find_block_limit" valu="findlimiton">
-    <label> Ciclo encontrar nuevos bloques y limit -90% </label>
+        <ul>
+            <li> 
+                <input type="radio" name="tipo" id="find_blocks" value="findon" checked> 
+                <label>Ciclo encontrar nuevos bloques</label>
+            </li>
+            <li>
+                <input type="radio" name="tipo" id="cicle_limit" value="cicleon" > 
+                <label>Ciclo actualizar limit</label>
+            </li>
+            <li>
+                <input type="radio" name="tipo" id="find_block_limit" valu="findlimiton">
+                <label> Ciclo encontrar nuevos bloques (c/limit -90%) </label>
+            </li>
+        </ul>
+
     </form>
+
 </div>
 
 <br>
