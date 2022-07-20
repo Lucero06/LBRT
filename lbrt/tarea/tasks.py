@@ -498,7 +498,7 @@ def loop_update_limit(channel_name, pool, algoritmo,limit_1,limit_2, amount, tim
 
 @app.task
 def chain_find_blocks_stop(channel_name, pool_id, pool_algorithm, miner,amount, limit):
-    res = (iniciar_orden.s(str(channel_name), limit,pool_id,pool_algorithm, amount) | loop_find_n_blocks_limit.s(str(channel_name),miner, limit, pool_algorithm) | detener_orden.s(str(channel_name))  )()
+    res = (iniciar_orden.s(str(channel_name), limit,pool_id,pool_algorithm, amount) | loop_find_n_blocks_stop.s(str(channel_name),miner, limit, pool_algorithm) | detener_orden.s(str(channel_name))  )()
     #res =(test_task.s() | test_task_2.s() | test_task_3.s())()
     return res
 #
