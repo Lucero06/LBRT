@@ -19,20 +19,33 @@
         <td>
             <input type="number" step="any" name="amount" id="amount" value="0.001"> BTC
         </td>
+        <td>
+            *
+        </td>
     </tr>
     <tr>
-        <td>Miner (Ciclo encontrar nuevos bloques)</td>
+        <td>Miner </td>
         <td>
             <input type="text" id="miner_find" name="miner_find" value="2Miners: PPLNS">
+        </td>
+        <td>
+            Ciclo encontrar nuevos bloques ((),(c/limit -90%), (y detener))
+
         </td>
     </tr>
      <tr>
         <td><label>*Limit</label> </td>
         <td><input id="limit_inp" type="number" step="any" name="limit" value="{{limit}}"> THs</td>
+        <td>
+            *
+        </td>
     </tr> 
     <tr>
-        <td><label>Limit 2 (Ciclo actualizar limit)</label> </td>
+        <td><label>Limit 2 </label> </td>
         <td><input id="limit_inp_2" type="number" step="any" name="limit_2" value="0.01"> THs</td>
+        <td>
+            Ciclo actualizar limit
+        </td>
     </tr> 
     <tr>
         <td><label>*Seleccionar Pool:</label></td>
@@ -46,12 +59,18 @@
             </select>
 
         </td>
+        <td>
+            *
+        </td>
 
     </tr>
     <tr>
-        <td>Time (Ciclo actualizar limit)</td>
+        <td>Time </td>
         <td>
             <input type="number" name="tiempo_limit" value="20" id="time_limit"> Min
+        </td>
+        <td>
+            Ciclo actualizar limit
         </td>
     </tr>
 </table>
@@ -74,19 +93,19 @@
         <ul>
             <li> 
                 <input type="radio" name="tipo" id="find_blocks" value="findon" checked> 
-                <label>Ciclo encontrar nuevos bloques</label>
+                <label for="find_blocks">Ciclo encontrar nuevos bloques</label>
             </li>
             <li>
                 <input type="radio" name="tipo" id="cicle_limit" value="cicleon" > 
-                <label>Ciclo actualizar limit</label>
+                <label for="cicle_limit">Ciclo actualizar limit</label>
             </li>
             <li>
                 <input type="radio" name="tipo" id="find_block_limit" valu="findlimiton">
-                <label> Ciclo encontrar nuevos bloques (c/limit -90%) </label>
+                <label for="find_block_limit"> Ciclo encontrar nuevos bloques (c/limit -90%) </label>
             </li>
             <li>
                 <input type="radio" name="tipo" id="find_block_stop" valu="findstopon">
-                <label> Ciclo encontrar nuevos bloques (y detener) </label>
+                <label for="find_block_stop"> Ciclo encontrar nuevos bloques (y detener) </label>
             </li>
         </ul>
 
