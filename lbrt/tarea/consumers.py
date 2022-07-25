@@ -71,10 +71,9 @@ class TareaConsumer(WebsocketConsumer):
             intervalo=message['params']['intervalo']
             tipo_intervalo=message['params']['tipo_intervalo']
             inicio=message['params']['inicio']
-            chain_task=getattr(tasks,'chain_find_blocks')
-            #res = chain_task()
-            #print(inicio)
-            #exit()
+
+            num_pulses=message['params']['num_pulses']
+            
             anio=datetime.now().year
             mes=datetime.now().month
             dia=datetime.now().day
@@ -102,7 +101,7 @@ class TareaConsumer(WebsocketConsumer):
             print('Schedule creado:')
             print(schedule)
 
-            if (tipo_nombre=='find_blocks'):
+            if (tipo_nombre=='pulses_cicle'):
 
                 #if(periodica=='si'):
                 name_tarea='find_blocks'
@@ -124,8 +123,16 @@ class TareaConsumer(WebsocketConsumer):
                     last_run_at=last_run_at,
                     interval=schedule,                  
                     name=name_tarea,
-                    task='tarea.tasks.chain_find_blocks', 
-                    args=json.dumps([str(self.channel_name),pool_id, pool_algorithm,find_miner, amount,limite])
+                    task='tarea.tasks.loop_pulsos', 
+                    args=json.dumps(
+                        [str(self.channel_name),
+                        num_pulses,
+                        limite, 
+                        limite_2, 
+                        pool_id,
+                        pool_algorithm,
+                        amount
+                         ])
                     )
                 else:
                     cp=PeriodicTask.objects.create(
@@ -133,236 +140,21 @@ class TareaConsumer(WebsocketConsumer):
                     last_run_at=last_run_at,
                     interval=schedule,                  
                     name=name_tarea,
-                    task='tarea.tasks.chain_find_blocks', 
-                    args=json.dumps([str(self.channel_name),pool_id, pool_algorithm,find_miner, amount,limite])
+                    task='tarea.tasks.loop_pulsos', 
+                    args=json.dumps(
+                        [str(self.channel_name),
+                        num_pulses,
+                        limite, 
+                        limite_2, 
+                        pool_id,
+                        pool_algorithm,
+                        amount
+                        ])
                     )
 
-                print('Tarea periodica creada: ')
+                print('Tarea creada: ')
                 print(cp)
                 print(cp.id)
-                #Tarea_Periodica.objects.create()
-
-                # else:
-                #     loop=getattr(tasks,'loop_find_n_blocks')
-                #     detener_orden=getattr(tasks,'detener_orden')
-                #     iniciar_orden=getattr(tasks,'iniciar_orden')
-                #     result = (iniciar_orden.s(str(self.channel_name), limite,pool_id,pool_algorithm, amount) | loop.s(str(self.channel_name),find_miner) | detener_orden.s(str(self.channel_name))  )()
-                #     #print(result.get())
-                #     #print(result.parent.get())
-                #     #print(result.parent.parent.get())
-            elif(tipo_nombre=='find_blocks_limit'):
-
-                name_tarea='find_blocks_limit'
-                regex='^'+name_tarea+'(_[0-9]+)*$'
-
-                periodic_tasks=PeriodicTask.objects.filter(name__regex=regex).all()
-                num_periodic_tasks=len(periodic_tasks)
-
-                if (num_periodic_tasks>0):
-                    name_last_task=PeriodicTask.objects.filter(name__regex=regex).last().name
-                    number_last_task=name_last_task.split('_')[-1]
-                    if not(number_last_task.isnumeric()):
-                        number_last_task=1
-
-                    name_tarea=name_tarea+'_'+str(int(number_last_task)+1)
-                print(name_tarea)
-                if(periodica=='si'):
-                    cp=PeriodicTask.objects.create(
-                    last_run_at=last_run_at,
-                    interval=schedule,                  
-                    name=name_tarea,
-                    task='tarea.tasks.chain_find_blocks_limit', 
-                    args=json.dumps([str(self.channel_name),pool_id, pool_algorithm,find_miner, amount,limite])
-                    )
-                else:
-                    cp=PeriodicTask.objects.create(
-                    one_off=True,
-                    last_run_at=last_run_at,
-                    interval=schedule,                  
-                    name=name_tarea,
-                    task='tarea.tasks.chain_find_blocks_limit', 
-                    args=json.dumps([str(self.channel_name),pool_id, pool_algorithm,find_miner, amount,limite])
-                    )
-
-                print('Tarea periodica creada: ')
-                print(cp)
-                print(cp.id)
-                
-            elif (tipo_nombre=='find_blocks_stop'):
-                name_tarea='find_blocks_stop'
-                regex='^'+name_tarea+'(_[0-9]+)*$'
-
-                periodic_tasks=PeriodicTask.objects.filter(name__regex=regex).all()
-                num_periodic_tasks=len(periodic_tasks)
-
-                if (num_periodic_tasks>0):
-                    name_last_task=PeriodicTask.objects.filter(name__regex=regex).last().name
-                    number_last_task=name_last_task.split('_')[-1]
-                    if not(number_last_task.isnumeric()):
-                        number_last_task=1
-
-                    name_tarea=name_tarea+'_'+str(int(number_last_task)+1)
-                print(name_tarea)
-                if(periodica=='si'):
-                    cp=PeriodicTask.objects.create(
-                    last_run_at=last_run_at,
-                    interval=schedule,                  
-                    name=name_tarea,
-                    task='tarea.tasks.chain_find_blocks_stop', 
-                    args=json.dumps([str(self.channel_name),pool_id, pool_algorithm,find_miner, amount,limite])
-                    )
-                else:
-                    cp=PeriodicTask.objects.create(
-                    one_off=True,
-                    last_run_at=last_run_at,
-                    interval=schedule,                  
-                    name=name_tarea,
-                    task='tarea.tasks.chain_find_blocks_stop', 
-                    args=json.dumps([str(self.channel_name),pool_id, pool_algorithm,find_miner, amount,limite])
-                    )
-
-                print('Tarea periodica creada: ')
-                print(cp)
-                print(cp.id)
-
-            elif (tipo_nombre=='ciclo_limit'):
-
-                limite=message['params']['limite']
-                limite_2=message['params']['limite_2']
-                time_limit=message['params']['time_limit']
-
-                #if (periodica=='si'):
-                name_tarea='ciclo_limit'
-                regex='^'+name_tarea+'(_[0-9]+)*$'
-                
-                periodic_tasks=PeriodicTask.objects.filter(name__regex=regex).all()
-                    #print(num_periodic_tasks)
-                num_periodic_tasks=len(periodic_tasks)
-                if (num_periodic_tasks>0):
-                    name_last_task=PeriodicTask.objects.filter(name__regex=regex).last().name
-                    number_last_task=name_last_task.split('_')[-1]
-                    if not(number_last_task.isnumeric()):
-                        number_last_task=1
-                    #print(number_last_task)
-                    name_tarea=name_tarea+'_'+str(int(number_last_task)+1)
-                print(name_tarea)
-
-                if (periodica=='si'):
-                    cp=PeriodicTask.objects.create(
-                        last_run_at=last_run_at,
-                        interval=schedule,                  
-                        name=name_tarea,
-                        task='tarea.tasks.loop_update_limit',
-                        args=json.dumps([str(self.channel_name),pool_id, pool_algorithm,limite,limite_2, amount, time_limit])
-                    )
-
-                else:
-                    cp=PeriodicTask.objects.create(
-                        one_off=True,
-                        last_run_at=last_run_at,
-                        interval=schedule,                  
-                        name=name_tarea,
-                        task='tarea.tasks.loop_update_limit',
-                        args=json.dumps([str(self.channel_name),pool_id, pool_algorithm,limite,limite_2, amount, time_limit])
-                    )
-               
-                print('Tarea periodica creada: ')
-                print(cp)
-                print(cp.id)
-            # else:
-
-            #     loop=getattr(tasks,'loop_update_limit')
-            #     result=loop.apply_async(args=[str(self.channel_name),pool_id, pool_algorithm, limite,limite_2, amount,time_limit])
-            #     print('tarea terminada: ')
-            #     print(result)
-        
-        # elif(tipo=='blocks_miner'):
-        #     result=getattr(tasks,'start_find_miner').apply_async(args=[str(self.channel_name),'Flexpool.io', limite,limite_2])
-        #     task_id=result.id
-        #     pass
-       
-        # elif(tipo=='detener'):
-        #     print('detener...')
-        #     #app.control.update_state(task_id=message['task_id'], state=states.SUCCESS)
-        #     app.control.revoke(message['task_id'], terminate=True)
-        #     #AsyncResult(message['task_id']).abort()
-        #     async_to_sync(self.channel_layer.group_send)("tarea", {"type": "tarea.message", 
-        #                                 "message": {'status':'off'
-        #                              } })
-        # elif (tipo=='editar'):
-        #     pass
-        # else:
-
-        #     ## TEST INICIAL
-        #     if (message['inicio']!=''):
-        #         tarea=getattr(tasks,'start_tarea')
-        #         pool_id=message['pool'].split('///')[0]
-        #         pool_algorithm=message['pool'].split('///')[1]
-
-        #         print(message['inicio'])
-        #         current_year = date.today().year
-        #         current_month = date.today().month
-        #         current_day = date.today().day
-        #         tzinfo = tz.gettz('America/Mexico_City')
-        #         print(tzinfo)
-        #         hour=message['inicio'].split(':')[0]
-        #         minute=message['inicio'].split(':')[1]
-        #         segundo=0
-        #         if(str(datetime.now().hour)==str(hour) and str(datetime.now().minute)==str(minute) ):
-        #             print('igual')
-        #             segundo=datetime.now().second
-        #         eta=datetime(current_year,current_month,current_day, hour=int(hour),minute=int(minute),second=segundo, microsecond=0,tzinfo=tzinfo)
-        #         print(eta)
-        #         expires=eta+timedelta(seconds=int(float(message['tiempo'])*60))
-        #         #print('expires')
-        #         #print(expires)
-        #         if(message['tiempo']!=''):
-        #             segundos=int(float(message['tiempo'])*60)
-        #             #print(segundos)
-        #             #print(expires)
-                    
-        #             #result=getattr(tasks,'start_tarea').apply_async(args=[str(self.channel_name)], time_limit=segundos)
-        #             #getattr(tasks,'start_tarea').signature(args=[str(self.channel_name)],time_limit=segundos, immutable=True)
-        #             #result=tarea.apply_async(args=[str(self.channel_name)], time_limit=segundos, link=tarea.si(str(self.channel_name)))
-        #             #print(result)
-        #             #print(result.id)
-        #             #task_id=result.id
-        #             #result.AbortableAsyncResult(task_id).abort()
-        #             #print(int(float(message['tiempo'])*60))                    
-        #             #getattr(tasks,'detener_tarea').apply_async(args=[str(self.channel_name), task_id],eta=expires)
-                    
-        #             #result=getattr(tasks,'iniciar_orden').apply_async(args=[str(self.channel_name), 0.01,pool_id,pool_algorithm], link=loop.s(str(self.channel_name), link=detener_orden.s()))
-                    
-        #             #print('result... task id ...')
-        #             #print(result)
-        #             #print('order id..')
-        #             #print(result.get())
-        #             #task_id=result
-        #             #order_id=result.get()
-        #         else:
-        #             result=getattr(tasks,'start_tarea').apply_async(args=[str(self.channel_name)],eta=eta)
-                
-        #         task_id=result.id
-
-        #     else:
-        #         result=getattr(tasks,'start_tarea').delay(self.channel_name)
-        #         #task id
-        #         task_id=result.id
-        #         print(task_id)
-        #         if(message['tiempo']!=''):
-        #             current_year = date.today().year
-        #             current_month = date.today().month
-        #             current_day = date.today().day
-        #             current_hour=datetime.now().hour
-        #             current_minute=datetime.now().minute
-        #             current_seconds=datetime.now().second
-        #             current_microseconds=datetime.now().microsecond
-        #             tzinfo = tz.gettz('America/Mexico_City')
-        #             eta=datetime(current_year,current_month,current_day, hour=int(current_hour),minute=int(current_minute),second=current_seconds, microsecond=current_microseconds,tzinfo=tzinfo)
-        #             print(int(float(message['tiempo'])*60))
-        #             expires=eta+timedelta(seconds=int(float(message['tiempo'])*60))
-        #             print(expires)
-        #             getattr(tasks,'detener_tarea').apply_async(args=[str(self.channel_name), task_id],eta=expires)
 
 
     def tarea_message(self, event):
