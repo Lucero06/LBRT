@@ -104,7 +104,7 @@ class TareaConsumer(WebsocketConsumer):
             if (tipo_nombre=='pulses_cicle'):
 
                 #if(periodica=='si'):
-                name_tarea='find_blocks'
+                name_tarea=tipo_nombre
                 regex='^'+name_tarea+'(_[0-9]+)*$'
                 #print(regex)
                 periodic_tasks=PeriodicTask.objects.filter(name__regex=regex).all()
