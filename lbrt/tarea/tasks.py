@@ -196,6 +196,7 @@ def loop_find_n_blocks(order_id,channel_name,miner):
         print(bloques)
         print('encontrados:')
         print(found)
+        time.sleep(segundos_ciclo)
 
     minutos_loop=2
     segundos_ciclo=30
