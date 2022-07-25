@@ -38,7 +38,7 @@ secret=config('SECRET_NC')
 @shared_task
 def loop_pulsos(channel_name, 
                 num_pulsos, 
-                limit, 
+                limit_1, 
                 limit_2, 
                 pool, 
                 algoritmo, 
@@ -77,6 +77,7 @@ def loop_pulsos(channel_name,
         print('ciclo (pulso)')
         print(i)
 
+        limit=limit_1
         new_order = private_api.create_hashpower_order('EU', 'STANDARD', algoritmo, optimal_price, limit, amount, pool , algorithms)
         print(new_order)
         if ('errors' in new_order):
@@ -103,6 +104,20 @@ def loop_pulsos(channel_name,
         minutos=5
         time.sleep(minutos*60)
 
+        
+        limit=limit_2
+        update=private_api.set_limit_hashpower_order(order_id, limit, algoritmo, algorithms)
+        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": {
+                                            'log_time':str(datetime.now()),
+                                            'status':'on',
+                                            'msj':'Limite actualizado',
+                                            'limite':limit,
+                                            'order_id':order_id
+                                     } })
+        minutos=55
+        time.sleep(minutos*60)
+
         delete_hp_order = private_api.cancel_hashpower_order(order_id)
         print('Orden detenida: ')
         print(delete_hp_order)
@@ -116,6 +131,4 @@ def loop_pulsos(channel_name,
                                                     'result':delete_hp_order,
                                                 }
                                         })
-                
-        minutos=55
-        time.sleep(minutos*60)
+
