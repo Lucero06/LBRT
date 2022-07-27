@@ -326,9 +326,10 @@ def loop_find_n_blocks_limit(order_id,channel_name,miner,limit, algoritmo):
     r = requests.get('https://etherscan.io/blocks', headers=headers)
     doc=html.fromstring(r.text)
     equis=doc.cssselect('tbody tr')
-
+    print(equis)
     for row in equis:
         #print('found')
+        print('row')
         found_miner=row[5].text_content()
         print(found_miner.lower())
         if(found_miner.lower()==miner.lower().strip()):
@@ -353,8 +354,10 @@ def loop_find_n_blocks_limit(order_id,channel_name,miner,limit, algoritmo):
         r = requests.get('https://etherscan.io/blocks', headers=headers)
         doc=html.fromstring(r.text)
         equis=doc.cssselect('tbody tr')
+        print(equis)
         for row in equis:
             #print('found')
+            print('row')
             found_miner=row[5].text_content()
             print(found_miner.lower())
             if(found_miner.lower()==miner.lower().strip()):
