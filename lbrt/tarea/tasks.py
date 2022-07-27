@@ -350,11 +350,13 @@ def loop_find_n_blocks_limit(order_id,channel_name,miner,limit, algoritmo):
     print(str(minutos_loop)+'minutos...')
     for i in range(int(ciclos)):
         print('ciclo:')
+        print('hola')
         print(i)
         r = requests.get('https://etherscan.io/blocks', headers=headers)
+        print(r.text)
         doc=html.fromstring(r.text)
         equis=doc.cssselect('tbody tr')
-        print(equis)
+        #print(equis)
         for row in equis:
             #print('found')
             print('row')
