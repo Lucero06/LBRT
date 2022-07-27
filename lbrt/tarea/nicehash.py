@@ -313,6 +313,9 @@ class private_api:
     def get_order_optimal_price(self,market,algorithm):
         query="market={}&algorithm={}".format(market,algorithm)
         return self.request('GET', '/main/api/v2/hashpower/order/price',query,None)
+    
+    def get_order_details(self,order_id):
+        return self.request('GET', '/main/api/v2/hashpower/order/'+ order_id,'',None)
     #
 
     ## WSS

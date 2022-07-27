@@ -63,6 +63,8 @@ def loop_pulsos(channel_name,
         optimal_price=float(optimal_price)
         optimal_price=round(optimal_price,4)
 
+        limit=limit_1
+
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": {
                                             'log_time':str(datetime.now()),
@@ -77,7 +79,7 @@ def loop_pulsos(channel_name,
         print('ciclo (pulso)')
         print(i)
 
-        limit=limit_1
+        
         new_order = private_api.create_hashpower_order('EU', 'STANDARD', algoritmo, optimal_price, limit, amount, pool , algorithms)
         print(new_order)
         if ('errors' in new_order):
@@ -100,10 +102,18 @@ def loop_pulsos(channel_name,
                                                 'order_id':order_id
                                         } })
             print('SUCCESS orden creada')
+        
+        order_details = private_api.get_order_details(order_id)
+        status=order_details['status']['code']
+        print(status)
 
         minutos=5
+        #minutos=3
         time.sleep(minutos*60)
-
+        
+        order_details = private_api.get_order_details(order_id)
+        status=order_details['status']['code']
+        print(status)
         
         limit=limit_2
         update=private_api.set_limit_hashpower_order(order_id, limit, algoritmo, algorithms)
@@ -116,19 +126,26 @@ def loop_pulsos(channel_name,
                                             'order_id':order_id
                                      } })
         minutos=55
+        #minutos=1
         time.sleep(minutos*60)
-
-        delete_hp_order = private_api.cancel_hashpower_order(order_id)
-        print('Orden detenida: ')
-        print(delete_hp_order)
-        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
-                                            "message": 
-                                                {
-                                                    'log_time':str(datetime.now()),
-                                                    'status':'off',
-                                                    'msj':'Orden detenida',
-                                                    'order_id':order_id,
-                                                    'result':delete_hp_order,
-                                                }
-                                        })
-
+    
+        order_details = private_api.get_order_details(order_id)
+        status=order_details['status']['code']
+        print(status)
+        if (status=='ACTIVE'):
+            delete_hp_order = private_api.cancel_hashpower_order(order_id)
+            print('Orden detenida: ')
+            print(delete_hp_order)
+            async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                                "message": 
+                                                    {
+                                                        'log_time':str(datetime.now()),
+                                                        'status':'off',
+                                                        'msj':'Orden detenida',
+                                                        'order_id':order_id,
+                                                        'result':delete_hp_order,
+                                                    }
+                                            })
+            order_details = private_api.get_order_details(order_id)
+            status=order_details['status']['code']
+            print(status)

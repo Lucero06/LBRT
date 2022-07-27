@@ -72,7 +72,7 @@ class TareaView(TemplateView):
                 context['pools']+=pools_on_page['list']
         #print(context['pools'])
         #price=0.75
-        limit=0.1
+        limit=0.03
         #amount=0.001
 
         #context['price']=price
