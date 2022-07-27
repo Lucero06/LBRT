@@ -314,7 +314,10 @@ def loop_find_n_blocks_limit(order_id,channel_name,miner,limit, algoritmo):
                                             }
                                       })
 
-    headers = {"User-Agent":"PostmanRuntime/7.29.0", "Accept":"*/*", "Cookie":"ASP.NET_SessionId=matq1vquefnukiobyh50j45s; __cflb=02DiuFnsSsHWYH8WqVXaqGvd6BSBaXQLTkWSdERZ1PfWk"}
+    headers = {
+        "User-Agent":"User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36", 
+        "Accept":"*/*"
+        }
 
     print('miner:')
     print(miner)
