@@ -23,16 +23,6 @@
             *
         </td>
     </tr>
-    <tr>
-        <td>Miner </td>
-        <td>
-            <input type="text" id="miner_find" name="miner_find" value="2Miners: PPLNS">
-        </td>
-        <td>
-            *
-
-        </td>
-    </tr>
      <tr>
         <td><label>*Limit</label> </td>
         <td><input id="limit_inp" type="number" step="any" name="limit" value="{{limit}}"> THs</td>
@@ -266,7 +256,6 @@ Log:<br>
         inicio=document.querySelector('#inicio').value;
         tipo_intervalo=document.querySelector('#tipo_intervalo').value;
         intervalo=document.querySelector('#intervalo').value;
-        miner_find=document.querySelector('#miner_find').value;
         pool=document.querySelector('#pools').value;
         amount=document.querySelector('#amount').value;
         num_pulses=document.querySelector('#num_pulses').value;
@@ -290,7 +279,6 @@ Log:<br>
                     'tipo_nombre':tipo_nombre,
                     'inicio':inicio,
                     'amount':amount,
-                    'miner_find': miner_find,
                     'limite':limite,
                     'limite_2':limite2,
                     'intervalo':intervalo,

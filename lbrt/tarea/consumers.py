@@ -38,8 +38,6 @@ class TareaConsumer(WebsocketConsumer):
             pool_id=message['params']['pool'].split('///')[0]
             pool_algorithm=message['params']['pool'].split('///')[1]
             miner=message['params']['pool'].split('///')[2]
-        if ('miner_find' in message['params']):
-            find_miner=message['params']['miner_find']
 
         if('amount' in message['params']):
             amount=message['params']['amount']
