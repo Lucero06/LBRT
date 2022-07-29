@@ -79,7 +79,7 @@ def loop_pulsos(channel_name,
         print('ciclo (pulso)')
         print(i)
 
-        
+        time.sleep(30)        
         new_order = private_api.create_hashpower_order('EU', 'STANDARD', algoritmo, optimal_price, limit, amount, pool , algorithms)
         print(new_order)
         if ('errors' in new_order):
