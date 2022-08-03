@@ -104,6 +104,8 @@ def loop_pulsos(channel_name,
             print('SUCCESS orden creada')
         
         order_details = private_api.get_order_details(order_id)
+        if ('status' not in order_details):
+            raise Exception('ERROR al obtener el status de la orden: '+str(order_details))
         status=order_details['status']['code']
         print(status)
 
@@ -112,6 +114,10 @@ def loop_pulsos(channel_name,
         time.sleep(minutos*60)
         
         order_details = private_api.get_order_details(order_id)
+        
+        if ('status' not in order_details):
+            raise Exception('ERROR al obtener el status de la orden: '+str(order_details))
+        
         status=order_details['status']['code']
         print(status)
         
@@ -130,6 +136,8 @@ def loop_pulsos(channel_name,
         time.sleep(minutos*60)
     
         order_details = private_api.get_order_details(order_id)
+        if ('status' not in order_details):
+            raise Exception('ERROR al obtener el status de la orden: '+str(order_details))
         status=order_details['status']['code']
         print(status)
         if (status=='ACTIVE'):
