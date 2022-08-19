@@ -11,10 +11,12 @@ from django.core.cache import cache
 #from celery.task.control import revoke
 from lbrt.celery import app
 
+from web3 import Web3
 
 from lxml import html
 from cssselect import GenericTranslator, SelectorError
 from lxml import etree
+
 from io import StringIO, BytesIO
 
 from celery.contrib.abortable import AbortableTask
@@ -25,14 +27,23 @@ from datetime import datetime
 
 channel_layer = get_channel_layer()
 
-
+#nicehash
 host=config('HOST_NC')
 organization_id=config('ORG_ID_NC')
 key=config('KEY_NC')
 secret=config('SECRET_NC')
-################# CRIPTO PROJECT
+#end nicehash
 
-#PERIODIC
+# infura
+infura_url = config('INFURA_URL')
+web3 = Web3(Web3.HTTPProvider(infura_url))
+#end infura
+
+################# CRIPTO PROJECT
+headers = {
+        "User-Agent":"User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36", 
+        "Accept":"*/*"
+        }
 
 #tarea que llama a tareas funciones , busca bloques
 @app.task
@@ -131,37 +142,26 @@ def loop_find_n_blocks(order_id,channel_name,miner):
                                                 'order_id':order_id
                                             }
                                       })
-
-
-    headers = {"User-Agent":"PostmanRuntime/7.29.0", "Accept":"*/*"}
-
     print('miner:')
     print(miner)
     n=2
     found=0
-
     bloques=[]
 
     #consultar bloques
-    r = requests.get('https://etherscan.io/blocks', headers=headers)
-    doc=html.fromstring(r.text)
-    equis=doc.cssselect('tbody tr')
-
-    for row in equis:
-        #print('found')
-        found_miner=row[5].text_content()
-        print(found_miner.lower())
-        if(found_miner.lower()==miner.lower().strip()):
-            id_block=row[0][0].text_content()
-            print(id_block)
-            if str(id_block) not in bloques:
-                bloques.append(str(id_block))
-    
+    #bloques "anteriores"
+    block = web3.eth.get_block('latest')
+    for i in range(0, 25):
+        blockVector = web3.eth.getBlock(block['number'] - i)
+        print("Block                 miner:")
+        print(blockVector.number, blockVector.miner)
+        if(blockVector.miner == miner):
+            print('         found')
+            bloques.append(str(blockVector.number))
     print(bloques)
     #end consultar bloques
 
-    #minutos=3
-    #time.sleep(minutos*60)
+    #bloques encontrados en n minutos_loop
     minutos_loop=3
     segundos_ciclo=30
     ciclos=(minutos_loop*60)/segundos_ciclo
@@ -169,66 +169,58 @@ def loop_find_n_blocks(order_id,channel_name,miner):
     for i in range(int(ciclos)):
         print('ciclo:')
         print(i)
-        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
-                                        "message": 
-                                            {
-                                                'log_time':str(datetime.now()),
-                                                'status':'on',
-                                                'ciclo:':i,
-                                                'order_id':order_id
-                                            }
-                                      })
-        r = requests.get('https://etherscan.io/blocks', headers=headers)
+        block = web3.eth.get_block('latest')
+        for j in range(0, 25):
+            blockVector = web3.eth.getBlock(block['number'] - j)
+            print("Block                 miner:")
+            print(blockVector.number, blockVector.miner)
+            id_block=blockVector.number
 
-        doc=html.fromstring(r.text)
-        equis=doc.cssselect('tbody tr')
-        
-        for row in equis:
-            
-            found_miner=row[5].text_content()
-            print(found_miner)
-            if(found_miner.lower()==miner.lower().strip()):
-                id_block=row[0][0].text_content()
-                print(id_block)
+            if(blockVector.miner == miner):
                 if str(id_block) not in bloques:
-                    bloques.append(str(id_block))
                     found+=1
+                    print('         found +1')
+                    bloques.append(str(id_block))
         print(bloques)
         print('encontrados:')
         print(found)
+        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                            "message": 
+                                                {
+                                                    'log_time':str(datetime.now()),
+                                                    'status':'on',
+                                                    'ciclo:':i,
+                                                    'encontrados:':found ,
+                                                    'order_id':order_id
+                                                }
+                                        })
         time.sleep(segundos_ciclo)
+            
+    #end
 
+    #bloques encontrados en n minutos_loop con condicion para terminar tarea
     minutos_loop=2
     segundos_ciclo=30
     ciclos=(minutos_loop*60)/segundos_ciclo
     print(str(minutos_loop)+'minutos...')
+
     for i in range(int(ciclos)):
         print('ciclo:')
         print(i)
-        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
-                                        "message": 
-                                            {
-                                                'log_time':str(datetime.now()),
-                                                'status':'on',
-                                                'ciclo:':i,
-                                                'order_id':order_id
-                                            }
-                                      })
-        r = requests.get('https://etherscan.io/blocks', headers=headers)
-
-        doc=html.fromstring(r.text)
-        equis=doc.cssselect('tbody tr')
         
-        for row in equis:
+        block = web3.eth.get_block('latest')
             
-            found_miner=row[5].text_content()
-            print(found_miner)
-            if(found_miner.lower()==miner.lower().strip()):
-                id_block=row[0][0].text_content()
-                print(id_block)
+        for j in range(0, 25):
+            blockVector = web3.eth.getBlock(block['number'] - j)
+            print("Block                 miner:")
+            print(blockVector.number, blockVector.miner)
+            id_block=blockVector.number
+            if(blockVector.miner == miner):
                 if str(id_block) not in bloques:
-                    bloques.append(str(id_block))
                     found+=1
+                    print('         found +1')
+                    bloques.append(str(id_block))
+            
         print(bloques)
         print('encontrados:')
         print(found)
@@ -238,16 +230,14 @@ def loop_find_n_blocks(order_id,channel_name,miner):
                                                 'log_time':str(datetime.now()),
                                                 'status':'on',
                                                 'encontrados:':found ,
+                                                'ciclo:':i,
                                                 'order_id':order_id                                           
                                             }
                                       })
         if(found>=n):
             return order_id
-
         time.sleep(segundos_ciclo)
-
     return order_id
-
 
 @shared_task
 def detener_orden(order_id,channel_name):
@@ -313,12 +303,6 @@ def loop_find_n_blocks_limit(order_id,channel_name,miner,limit, algoritmo):
                                                 'order_id':order_id
                                             }
                                       })
-
-    headers = {
-        "User-Agent":"User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36", 
-        "Accept":"*/*"
-        }
-
     print('miner:')
     print(miner)
     n=2
@@ -326,87 +310,66 @@ def loop_find_n_blocks_limit(order_id,channel_name,miner,limit, algoritmo):
     bloques=[]
 
     #consultar bloques
-    r = requests.get('https://etherscan.io/blocks', headers=headers)
-    doc=html.fromstring(r.text)
-    equis=doc.cssselect('tbody tr')
-    print(equis)
-    for row in equis:
-        #print('found')
-        print('row')
-        found_miner=row[5].text_content()
-        print(found_miner.lower())
-        if(found_miner.lower()==miner.lower().strip()):
-            id_block=row[0][0].text_content()
-            print(id_block)
-            if str(id_block) not in bloques:
-                bloques.append(str(id_block))
-        print(bloques)
-
+    #bloques "anteriores"
+    block = web3.eth.get_block('latest')
+    for i in range(0, 25):
+        blockVector = web3.eth.getBlock(block['number'] - i)
+        print("Block                 miner:")
+        print(blockVector.number, blockVector.miner)
+        if(blockVector.miner == miner):
+            print('         found')
+            bloques.append(str(blockVector.number))
+    print(bloques)
     #end consultar bloques
 
-
-    #minutos=3
-    #time.sleep(minutos*60)
+    #bloques encontrados en n minutos_loop
     minutos_loop=3
     segundos_ciclo=30
     ciclos=(minutos_loop*60)/segundos_ciclo
     print(str(minutos_loop)+'minutos...')
+
     for i in range(int(ciclos)):
         print('ciclo:')
-        print('hola')
         print(i)
-        r = requests.get('https://etherscan.io/blocks', headers=headers)
-        print(r.text)
-        doc=html.fromstring(r.text)
-        equis=doc.cssselect('tbody tr')
-        #print(equis)
-        for row in equis:
-            #print('found')
-            print('row')
-            found_miner=row[5].text_content()
-            print(found_miner.lower())
-            if(found_miner.lower()==miner.lower().strip()):
-                id_block=row[0][0].text_content()
-                print(id_block)
+        block = web3.eth.get_block('latest')
+        for j in range(0, 25):
+            blockVector = web3.eth.getBlock(block['number'] - j)
+            print("Block                 miner:")
+            print(blockVector.number, blockVector.miner)
+            id_block=blockVector.number
+            if(blockVector.miner == miner):
                 if str(id_block) not in bloques:
-                    bloques.append(str(id_block))
                     found+=1
-            print(bloques)
+                    print('         found +1')
+                    bloques.append(str(id_block))
+            
+        print(bloques)
+        print('encontrados:')
+        print(found)
         time.sleep(segundos_ciclo)
-        
+
     #loop
+    #bloques encontrados en n minutos_loop con condicion para terminar tarea
     minutos_loop=2
     segundos_ciclo=30
     ciclos=(minutos_loop*60)/segundos_ciclo
     print(str(minutos_loop)+'minutos...')
+
     for i in range(int(ciclos)):
         print('ciclo:')
         print(i)
-        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
-                                        "message": 
-                                            {
-                                                'log_time':str(datetime.now()),
-                                                'status':'on',
-                                                'ciclo:':i,
-                                                'order_id':order_id
-                                            }
-                                      })
-        r = requests.get('https://etherscan.io/blocks', headers=headers)
-
-        doc=html.fromstring(r.text)
-        equis=doc.cssselect('tbody tr')
-        #found=0
-        for row in equis:
-            #print('found')
-            found_miner=row[5].text_content()
-            print(found_miner.lower())
-            if(found_miner.lower()==miner.lower().strip()):
-                id_block=row[0][0].text_content()
-                print(id_block)    
+        block = web3.eth.get_block('latest')
+        for j in range(0, 25):
+            blockVector = web3.eth.getBlock(block['number'] - j)
+            print("Block                 miner:")
+            print(blockVector.number, blockVector.miner)
+            id_block=blockVector.number
+            if(blockVector.miner == miner):
                 if str(id_block) not in bloques:
-                    bloques.append(str(id_block))
                     found+=1
-            print(bloques)
+                    print('         found +1')
+                    bloques.append(str(id_block))
+        print(bloques)
         print('encontrados:')
         print(found)
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
@@ -414,16 +377,15 @@ def loop_find_n_blocks_limit(order_id,channel_name,miner,limit, algoritmo):
                                             {
                                                 'log_time':str(datetime.now()),
                                                 'status':'on',
+                                                'ciclo:':i,
                                                 'encontrados:':found ,
                                                 'bloques':bloques,
                                                 'order_id':order_id                                           
                                             }
                                       })
-        
-        time.sleep(segundos_ciclo)
+        time.sleep(segundos_ciclo)  
     if(found==0):
         return order_id
-
 
     #reducir limite
     print('limite inicial:')
@@ -439,7 +401,6 @@ def loop_find_n_blocks_limit(order_id,channel_name,miner,limit, algoritmo):
         key, 
         secret, 
         True)
-
     async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                             "message": 
                                                 {
@@ -601,32 +562,23 @@ def loop_find_n_blocks_stop(order_id,channel_name,miner):
                                             }
                                       })
 
-
-    headers = {"User-Agent":"PostmanRuntime/7.29.0", "Accept":"*/*"}
-
     print('miner:')
     print(miner)
     n=1
     found=0
-
     bloques=[]
 
     #consultar bloques
-    r = requests.get('https://etherscan.io/blocks', headers=headers)
-    doc=html.fromstring(r.text)
-    equis=doc.cssselect('tbody tr')
-
-    for row in equis:
-        #print('found')
-        found_miner=row[5].text_content()
-        print(found_miner.lower())
-        if(found_miner.lower()==miner.lower().strip()):
-            id_block=row[0][0].text_content()
-            print(id_block)
-            if str(id_block) not in bloques:
-                bloques.append(str(id_block))
-        print(bloques)
-
+    #bloques "anteriores"
+    block = web3.eth.get_block('latest')
+    for i in range(0, 25):
+        blockVector = web3.eth.getBlock(block['number'] - i)
+        print("Block                 miner:")
+        print(blockVector.number, blockVector.miner)
+        if(blockVector.miner == miner):
+            print('         found')
+            bloques.append(str(blockVector.number))
+    print(bloques)
     #end consultar bloques
 
     minutos_loop=4
@@ -636,31 +588,21 @@ def loop_find_n_blocks_stop(order_id,channel_name,miner):
     for i in range(int(ciclos)):
         print('ciclo:')
         print(i)
-        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
-                                        "message": 
-                                            {
-                                                'log_time':str(datetime.now()),
-                                                'status':'on',
-                                                'ciclo:':i,
-                                                'order_id':order_id
-                                            }
-                                      })
-        r = requests.get('https://etherscan.io/blocks', headers=headers)
 
-        doc=html.fromstring(r.text)
-        equis=doc.cssselect('tbody tr')
-        
-        for row in equis:
+        block = web3.eth.get_block('latest')
             
-            found_miner=row[5].text_content()
-            print(found_miner)
-            if(found_miner.lower()==miner.lower().strip()):
-                id_block=row[0][0].text_content()
-                print(id_block)
+        for j in range(0, 25):
+            blockVector = web3.eth.getBlock(block['number'] - j)
+            print("Block                 miner:")
+            print(blockVector.number, blockVector.miner)
+            id_block=blockVector.number
+            if(blockVector.miner == miner):
                 if str(id_block) not in bloques:
-                    bloques.append(str(id_block))
                     found+=1
-            print(bloques)
+                    print('         found +1')
+                    bloques.append(str(id_block))
+            
+        print(bloques)
         print('encontrados:')
         print(found)
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
@@ -668,27 +610,15 @@ def loop_find_n_blocks_stop(order_id,channel_name,miner):
                                             {
                                                 'log_time':str(datetime.now()),
                                                 'status':'on',
+                                                'ciclo:':i,
                                                 'encontrados:':found ,
                                                 'order_id':order_id                                           
                                             }
                                       })
         if(found>=n):
             return order_id
-
-        time.sleep(segundos_ciclo)
-
+        time.sleep(segundos_ciclo)  
     return order_id
-
-
-
-
-
-
-
-
-
-
-
 
 
 

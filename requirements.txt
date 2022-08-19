@@ -18,3 +18,4 @@ django-cors-headers==3.13.0
 django-celery-beat==2.3.0
 gunicorn
 django-celery-results==2.4.0
+web3==5.30.0
