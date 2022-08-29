@@ -25,6 +25,10 @@ from decouple import config
 
 from datetime import datetime
 
+from celery.utils.log import get_task_logger
+
+logger = get_task_logger(__name__)
+
 channel_layer = get_channel_layer()
 
 #nicehash
@@ -132,112 +136,136 @@ def iniciar_orden(channel_name, limit, pool, algoritmo, amount):
 
 @shared_task
 def loop_find_n_blocks(order_id,channel_name,miner):
-    print('Tarea find n blocks iniciada... ')
-    async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
-                                        "message": 
-                                            {
-                                                'log_time':str(datetime.now()),
-                                                'status':'on',
-                                                'msj:':'Tarea find n blocks iniciada...',
-                                                'order_id':order_id
-                                            }
-                                      })
-    print('miner:')
-    print(miner)
-    n=2
-    found=0
-    bloques=[]
-
-    #consultar bloques
-    #bloques "anteriores"
-    block = web3.eth.get_block('latest')
-    for i in range(0, 25):
-        blockVector = web3.eth.getBlock(block['number'] - i)
-        print("Block                 miner:")
-        print(blockVector.number, blockVector.miner)
-        if(blockVector.miner == miner):
-            print('         found')
-            bloques.append(str(blockVector.number))
-    print(bloques)
-    #end consultar bloques
-
-    #bloques encontrados en n minutos_loop
-    minutos_loop=3
-    segundos_ciclo=30
-    ciclos=(minutos_loop*60)/segundos_ciclo
-    print(str(minutos_loop)+'minutos...')
-    for i in range(int(ciclos)):
-        print('ciclo:')
-        print(i)
-        block = web3.eth.get_block('latest')
-        for j in range(0, 25):
-            blockVector = web3.eth.getBlock(block['number'] - j)
-            print("Block                 miner:")
-            print(blockVector.number, blockVector.miner)
-            id_block=blockVector.number
-
-            if(blockVector.miner == miner):
-                if str(id_block) not in bloques:
-                    found+=1
-                    print('         found +1')
-                    bloques.append(str(id_block))
-        print(bloques)
-        print('encontrados:')
-        print(found)
+    try:
+        print('Tarea find n blocks iniciada... ')
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                             "message": 
                                                 {
                                                     'log_time':str(datetime.now()),
                                                     'status':'on',
-                                                    'ciclo:':i,
-                                                    'encontrados:':found ,
+                                                    'msj:':'Tarea find n blocks iniciada...',
                                                     'order_id':order_id
                                                 }
                                         })
-        time.sleep(segundos_ciclo)
-            
-    #end
+        print('miner:')
+        print(miner)
+        n=2
+        found=0
+        bloques=[]
 
-    #bloques encontrados en n minutos_loop con condicion para terminar tarea
-    minutos_loop=2
-    segundos_ciclo=30
-    ciclos=(minutos_loop*60)/segundos_ciclo
-    print(str(minutos_loop)+'minutos...')
-
-    for i in range(int(ciclos)):
-        print('ciclo:')
-        print(i)
-        
+        #consultar bloques
+        #bloques "anteriores"
         block = web3.eth.get_block('latest')
-            
-        for j in range(0, 25):
-            blockVector = web3.eth.getBlock(block['number'] - j)
+        for i in range(0, 25):
+            blockVector = web3.eth.getBlock(block['number'] - i)
             print("Block                 miner:")
             print(blockVector.number, blockVector.miner)
-            id_block=blockVector.number
             if(blockVector.miner == miner):
-                if str(id_block) not in bloques:
-                    found+=1
-                    print('         found +1')
-                    bloques.append(str(id_block))
-            
+                print('         found')
+                bloques.append(str(blockVector.number))
         print(bloques)
-        print('encontrados:')
-        print(found)
+        #end consultar bloques
+
+        #bloques encontrados en n minutos_loop
+        minutos_loop=3
+        segundos_ciclo=30
+        ciclos=(minutos_loop*60)/segundos_ciclo
+        print(str(minutos_loop)+'minutos...')
+        for i in range(int(ciclos)):
+            print('ciclo:')
+            print(i)
+            block = web3.eth.get_block('latest')
+            print(block)
+            for j in range(0, 25):
+                blockVector = web3.eth.getBlock(block['number'] - j)
+                print("Block                 miner:")
+                print(blockVector.number, blockVector.miner)
+                id_block=blockVector.number
+
+                if(blockVector.miner == miner):
+                    if str(id_block) not in bloques:
+                        found+=1
+                        print('         found +1')
+                        bloques.append(str(id_block))
+            print(bloques)
+            print('encontrados:')
+            print(found)
+            async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                                "message": 
+                                                    {
+                                                        'log_time':str(datetime.now()),
+                                                        'status':'on',
+                                                        'ciclo:':i,
+                                                        'encontrados:':found ,
+                                                        'order_id':order_id
+                                                    }
+                                            })
+            time.sleep(segundos_ciclo)
+                
+        #end
+
+        #bloques encontrados en n minutos_loop con condicion para terminar tarea
+        minutos_loop=2
+        segundos_ciclo=30
+        ciclos=(minutos_loop*60)/segundos_ciclo
+        print(str(minutos_loop)+'minutos...')
+
+        for i in range(int(ciclos)):
+            print('ciclo:')
+            print(i)
+            
+            block = web3.eth.get_block('latest')
+                
+            for j in range(0, 25):
+                blockVector = web3.eth.getBlock(block['number'] - j)
+                print("Block                 miner:")
+                print(blockVector.number, blockVector.miner)
+                id_block=blockVector.number
+                if(blockVector.miner == miner):
+                    if str(id_block) not in bloques:
+                        found+=1
+                        print('         found +1')
+                        bloques.append(str(id_block))
+                
+            print(bloques)
+            print('encontrados:')
+            print(found)
+            async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                            "message": 
+                                                {
+                                                    'log_time':str(datetime.now()),
+                                                    'status':'on',
+                                                    'encontrados:':found ,
+                                                    'ciclo:':i,
+                                                    'order_id':order_id                                           
+                                                }
+                                        })
+            if(found>=n):
+                return order_id
+            time.sleep(segundos_ciclo)
+        return order_id
+    except Exception as e:
+        logger.error('ERROR capturado:')
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": 
                                             {
                                                 'log_time':str(datetime.now()),
                                                 'status':'on',
-                                                'encontrados:':found ,
-                                                'ciclo:':i,
-                                                'order_id':order_id                                           
+                                                'msj':'ERROR capturado',
+                                                'order_id':order_id
                                             }
                                       })
-        if(found>=n):
-            return order_id
-        time.sleep(segundos_ciclo)
-    return order_id
+        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": 
+                                            {
+                                                'log_time':str(datetime.now()),
+                                                'status':'on',
+                                                'msj':str(e),
+                                                'order_id':order_id
+                                            }
+                                      })
+        logger.error(e)
+        return order_id
 
 @shared_task
 def detener_orden(order_id,channel_name):
@@ -293,129 +321,151 @@ def chain_find_blocks_limit(channel_name, pool_id, pool_algorithm, miner,amount,
 #tarea encontrar bloques w limit (?)
 @shared_task
 def loop_find_n_blocks_limit(order_id,channel_name,miner,limit, algoritmo):
-    print('Tarea find n blocks iniciada... ')
-    async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
-                                        "message": 
-                                            {
-                                                'log_time':str(datetime.now()),
-                                                'status':'on',
-                                                'msj:':'Tarea find n blocks w limit iniciada...',
-                                                'order_id':order_id
-                                            }
-                                      })
-    print('miner:')
-    print(miner)
-    n=2
-    found=0
-    bloques=[]
+    try:
+        print('Tarea find n blocks iniciada... ')
+        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                            "message": 
+                                                {
+                                                    'log_time':str(datetime.now()),
+                                                    'status':'on',
+                                                    'msj:':'Tarea find n blocks w limit iniciada...',
+                                                    'order_id':order_id
+                                                }
+                                        })
+        print('miner:')
+        print(miner)
+        n=2
+        found=0
+        bloques=[]
 
-    #consultar bloques
-    #bloques "anteriores"
-    block = web3.eth.get_block('latest')
-    for i in range(0, 25):
-        blockVector = web3.eth.getBlock(block['number'] - i)
-        print("Block                 miner:")
-        print(blockVector.number, blockVector.miner)
-        if(blockVector.miner == miner):
-            print('         found')
-            bloques.append(str(blockVector.number))
-    print(bloques)
-    #end consultar bloques
-
-    #bloques encontrados en n minutos_loop
-    minutos_loop=3
-    segundos_ciclo=30
-    ciclos=(minutos_loop*60)/segundos_ciclo
-    print(str(minutos_loop)+'minutos...')
-
-    for i in range(int(ciclos)):
-        print('ciclo:')
-        print(i)
+        #consultar bloques
+        #bloques "anteriores"
         block = web3.eth.get_block('latest')
-        for j in range(0, 25):
-            blockVector = web3.eth.getBlock(block['number'] - j)
+        for i in range(0, 25):
+            blockVector = web3.eth.getBlock(block['number'] - i)
             print("Block                 miner:")
             print(blockVector.number, blockVector.miner)
-            id_block=blockVector.number
             if(blockVector.miner == miner):
-                if str(id_block) not in bloques:
-                    found+=1
-                    print('         found +1')
-                    bloques.append(str(id_block))
-            
+                print('         found')
+                bloques.append(str(blockVector.number))
         print(bloques)
-        print('encontrados:')
-        print(found)
-        time.sleep(segundos_ciclo)
+        #end consultar bloques
 
-    #loop
-    #bloques encontrados en n minutos_loop con condicion para terminar tarea
-    minutos_loop=2
-    segundos_ciclo=30
-    ciclos=(minutos_loop*60)/segundos_ciclo
-    print(str(minutos_loop)+'minutos...')
+        #bloques encontrados en n minutos_loop
+        minutos_loop=3
+        segundos_ciclo=30
+        ciclos=(minutos_loop*60)/segundos_ciclo
+        print(str(minutos_loop)+'minutos...')
 
-    for i in range(int(ciclos)):
-        print('ciclo:')
-        print(i)
-        block = web3.eth.get_block('latest')
-        for j in range(0, 25):
-            blockVector = web3.eth.getBlock(block['number'] - j)
-            print("Block                 miner:")
-            print(blockVector.number, blockVector.miner)
-            id_block=blockVector.number
-            if(blockVector.miner == miner):
-                if str(id_block) not in bloques:
-                    found+=1
-                    print('         found +1')
-                    bloques.append(str(id_block))
-        print(bloques)
-        print('encontrados:')
-        print(found)
+        for i in range(int(ciclos)):
+            print('ciclo:')
+            print(i)
+            block = web3.eth.get_block('latest')
+            for j in range(0, 25):
+                blockVector = web3.eth.getBlock(block['number'] - j)
+                print("Block                 miner:")
+                print(blockVector.number, blockVector.miner)
+                id_block=blockVector.number
+                if(blockVector.miner == miner):
+                    if str(id_block) not in bloques:
+                        found+=1
+                        print('         found +1')
+                        bloques.append(str(id_block))
+                
+            print(bloques)
+            print('encontrados:')
+            print(found)
+            time.sleep(segundos_ciclo)
+
+        #loop
+        #bloques encontrados en n minutos_loop con condicion para terminar tarea
+        minutos_loop=2
+        segundos_ciclo=30
+        ciclos=(minutos_loop*60)/segundos_ciclo
+        print(str(minutos_loop)+'minutos...')
+
+        for i in range(int(ciclos)):
+            print('ciclo:')
+            print(i)
+            block = web3.eth.get_block('latest')
+            for j in range(0, 25):
+                blockVector = web3.eth.getBlock(block['number'] - j)
+                print("Block                 miner:")
+                print(blockVector.number, blockVector.miner)
+                id_block=blockVector.number
+                if(blockVector.miner == miner):
+                    if str(id_block) not in bloques:
+                        found+=1
+                        print('         found +1')
+                        bloques.append(str(id_block))
+            print(bloques)
+            print('encontrados:')
+            print(found)
+            async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                            "message": 
+                                                {
+                                                    'log_time':str(datetime.now()),
+                                                    'status':'on',
+                                                    'ciclo:':i,
+                                                    'encontrados:':found ,
+                                                    'bloques':bloques,
+                                                    'order_id':order_id                                           
+                                                }
+                                        })
+            time.sleep(segundos_ciclo)  
+        if(found==0):
+            return order_id
+
+        #reducir limite
+        print('limite inicial:')
+        print(limit)
+        limit=float(limit)-(float(limit)*0.9)
+        print('limite:')
+        print(limit)
+
+        public_api = nicehash.public_api('https://api2.nicehash.com', True)
+        algorithms = public_api.get_algorithms()
+        private_api = nicehash.private_api(host, 
+            organization_id, 
+            key, 
+            secret, 
+            True)
+        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                                "message": 
+                                                    {
+                                                        'log_time':str(datetime.now()),
+                                                        'status':'on',
+                                                        'msj':'Update limit iniciado...',
+                                                        'order_id':order_id
+                                                    }
+                                            })
+        update=private_api.set_limit_hashpower_order(order_id, limit, algoritmo, algorithms)
+        print(update)
+        minutos=1.5
+        time.sleep(minutos*60)
+        return order_id
+    except Exception as e:
+        logger.error('ERROR capturado:')
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": 
                                             {
                                                 'log_time':str(datetime.now()),
                                                 'status':'on',
-                                                'ciclo:':i,
-                                                'encontrados:':found ,
-                                                'bloques':bloques,
-                                                'order_id':order_id                                           
+                                                'msj':'ERROR capturado',
+                                                'order_id':order_id
                                             }
-                                      })
-        time.sleep(segundos_ciclo)  
-    if(found==0):
+                                    })
+        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": 
+                                            {
+                                                'log_time':str(datetime.now()),
+                                                'status':'on',
+                                                'msj':str(e),
+                                                'order_id':order_id
+                                            }
+                                    })
+        logger.error(e)
         return order_id
-
-    #reducir limite
-    print('limite inicial:')
-    print(limit)
-    limit=float(limit)-(float(limit)*0.9)
-    print('limite:')
-    print(limit)
-
-    public_api = nicehash.public_api('https://api2.nicehash.com', True)
-    algorithms = public_api.get_algorithms()
-    private_api = nicehash.private_api(host, 
-        organization_id, 
-        key, 
-        secret, 
-        True)
-    async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
-                                            "message": 
-                                                {
-                                                    'log_time':str(datetime.now()),
-                                                    'status':'on',
-                                                    'msj':'Update limit iniciado...',
-                                                    'order_id':order_id
-                                                }
-                                        })
-    update=private_api.set_limit_hashpower_order(order_id, limit, algoritmo, algorithms)
-    print(update)
-    minutos=1.5
-    time.sleep(minutos*60)
-    return order_id
-
 
 
 #tarea ciclo actualiza limit
@@ -551,74 +601,97 @@ def chain_find_blocks_stop(channel_name, pool_id, pool_algorithm, miner,amount, 
 
 @shared_task
 def loop_find_n_blocks_stop(order_id,channel_name,miner):
-    print('Tarea find n blocks iniciada... ')
-    async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
-                                        "message": 
-                                            {
-                                                'log_time':str(datetime.now()),
-                                                'status':'on',
-                                                'msj:':'Tarea find n blocks iniciada...',
-                                                'order_id':order_id
-                                            }
-                                      })
+    try:
+        print('Tarea find n blocks iniciada... ')
+        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                            "message": 
+                                                {
+                                                    'log_time':str(datetime.now()),
+                                                    'status':'on',
+                                                    'msj:':'Tarea find n blocks iniciada...',
+                                                    'order_id':order_id
+                                                }
+                                        })
 
-    print('miner:')
-    print(miner)
-    n=1
-    found=0
-    bloques=[]
+        print('miner:')
+        print(miner)
+        n=1
+        found=0
+        bloques=[]
 
-    #consultar bloques
-    #bloques "anteriores"
-    block = web3.eth.get_block('latest')
-    for i in range(0, 25):
-        blockVector = web3.eth.getBlock(block['number'] - i)
-        print("Block                 miner:")
-        print(blockVector.number, blockVector.miner)
-        if(blockVector.miner == miner):
-            print('         found')
-            bloques.append(str(blockVector.number))
-    print(bloques)
-    #end consultar bloques
-
-    minutos_loop=4
-    segundos_ciclo=30
-    ciclos=(minutos_loop*60)/segundos_ciclo
-
-    for i in range(int(ciclos)):
-        print('ciclo:')
-        print(i)
-
+        #consultar bloques
+        #bloques "anteriores"
         block = web3.eth.get_block('latest')
-            
-        for j in range(0, 25):
-            blockVector = web3.eth.getBlock(block['number'] - j)
+        for i in range(0, 25):
+            blockVector = web3.eth.getBlock(block['number'] - i)
             print("Block                 miner:")
             print(blockVector.number, blockVector.miner)
-            id_block=blockVector.number
             if(blockVector.miner == miner):
-                if str(id_block) not in bloques:
-                    found+=1
-                    print('         found +1')
-                    bloques.append(str(id_block))
-            
+                print('         found')
+                bloques.append(str(blockVector.number))
         print(bloques)
-        print('encontrados:')
-        print(found)
+        #end consultar bloques
+
+        minutos_loop=4
+        segundos_ciclo=30
+        ciclos=(minutos_loop*60)/segundos_ciclo
+
+        for i in range(int(ciclos)):
+            print('ciclo:')
+            print(i)
+
+            block = web3.eth.get_block('latest')
+                
+            for j in range(0, 25):
+                blockVector = web3.eth.getBlock(block['number'] - j)
+                print("Block                 miner:")
+                print(blockVector.number, blockVector.miner)
+                id_block=blockVector.number
+                if(blockVector.miner == miner):
+                    if str(id_block) not in bloques:
+                        found+=1
+                        print('         found +1')
+                        bloques.append(str(id_block))
+                
+            print(bloques)
+            print('encontrados:')
+            print(found)
+            async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                            "message": 
+                                                {
+                                                    'log_time':str(datetime.now()),
+                                                    'status':'on',
+                                                    'ciclo:':i,
+                                                    'encontrados:':found ,
+                                                    'order_id':order_id                                           
+                                                }
+                                        })
+            if(found>=n):
+                return order_id
+            time.sleep(segundos_ciclo)  
+        return order_id
+    except Exception as e:
+        logger.error('ERROR capturado:')
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": 
                                             {
                                                 'log_time':str(datetime.now()),
                                                 'status':'on',
-                                                'ciclo:':i,
-                                                'encontrados:':found ,
-                                                'order_id':order_id                                           
+                                                'msj':'ERROR capturado',
+                                                'order_id':order_id
                                             }
-                                      })
-        if(found>=n):
-            return order_id
-        time.sleep(segundos_ciclo)  
-    return order_id
+                                    })
+        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
+                                        "message": 
+                                            {
+                                                'log_time':str(datetime.now()),
+                                                'status':'on',
+                                                'msj':str(e),
+                                                'order_id':order_id
+                                            }
+                                    })
+        logger.error(e)
+        return order_id
 
 
 
