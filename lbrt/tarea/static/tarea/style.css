@@ -1,9 +1,10 @@
 *{
-	font-family: monospace;
+	font-family: system-ui;
 }
 body{
 	background-color: black;
 	color: white;
+	padding: 10px;
 }
 #log-task{
 	width: 100%;

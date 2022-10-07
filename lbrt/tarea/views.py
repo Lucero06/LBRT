@@ -23,33 +23,32 @@ class TareaView(TemplateView):
 
     template_name = 'tarea/tarea.html'
 
-    
     #print(pools_on_fist_page)
     #pools=json.loads(pools_on_fist_page)
 
     def get_context_data(self, **kwargs):
+        #Datos que se van a mostrar en la interfaz (template, vista) en la pantalla que ve el usuario
+        
+        #Dato hora actual
         context = super().get_context_data(**kwargs)
         hora= datetime.now().hour
         context['hora'] = str(hora).zfill(2)
-        
         minuto=datetime.now()
         #minuto=minuto+timedelta(minutes=1)
         context['minuto'] = str(minuto.minute).zfill(2)
-
         context['segundo'] =  datetime.now().second
 
-      
-        
+        #Conexión y datos NiceHash
         host=config('HOST_NC')
         organization_id=config('ORG_ID_NC')
         key=config('KEY_NC')
         secret=config('SECRET_NC')
 
-
         private_api = nicehash.private_api(host, organization_id, key
         , secret, True)
-
+        
         pools_on_fist_page=''
+        
         try:
             #pass
             pools_on_fist_page = private_api.get_my_pools('', '')
@@ -57,8 +56,9 @@ class TareaView(TemplateView):
             print('exception?')
             print(type(inst))    # the exception instance
             print(inst.args)     # arguments stored in .args
-            print(inst)      
+            print(inst)   
 
+        #Datos pools
         #print(pools_on_fist_page)
         context['pools']=pools_on_fist_page['list']
         print(len(pools_on_fist_page['list']))
@@ -70,15 +70,16 @@ class TareaView(TemplateView):
                 #print(pools_on_page)
                 print(len(pools_on_page['list']))
                 context['pools']+=pools_on_page['list']
-        #print(context['pools'])
-        #price=0.75
-        limit=0.1
-        #amount=0.001
+        print(context['pools'])
 
-        #context['price']=price
-        context['limit']=limit
+
+        #Valores por defecto para la interfaz (y que se pueden cambiar en interfaz)
+        #limit=0.1
+        #amount=0.001
+        #context['limit']=limit
         #context['amount']=amount
 
+        #Obtener Datos Tareas gaurdadas
         schedules=IntervalSchedule.objects.all()
         periodic_tasks=PeriodicTask.objects.order_by('-id').all()
         periodic_tasks=list(periodic_tasks)
@@ -93,8 +94,11 @@ class TareaView(TemplateView):
         #print(PeriodicTask.objects.values())
         #print(TaskResult.objects.values())
         #tasks_results=TaskResult.objects.all().values('task_id').distinct()
-
+        
+        #Obtener Datos Resultados de Tareas
         tasks_results=TaskResult.objects.order_by('-id').all()[:5]
+        
+        #Datos Tareas y Resultados de tareas
         context['schedules']=list(schedules)
         context['periodic_tasks']=periodic_tasks
         context['tasks_results']=list(tasks_results)

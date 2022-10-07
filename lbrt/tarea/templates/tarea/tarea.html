@@ -8,12 +8,35 @@
 
 <link rel="stylesheet" type="text/css" href="{% static 'tarea/style.css' %}">
 <div id="programar">
-
+<p>
+    <h2 style="display:inline-block">
+        Creación de ordenes 
+        <span style="font-size:.56em">
+            Tarea que crea orden y la mantiene arriba por un tiempo determinado.
+        </span>
+    </h2>
     
-<br>
-
+</p>
+    
+Configuración de orden:
+<br><br>
 <table>
-   
+    <tr>
+        <td><label>*Pool:</label></td>
+        <td>
+            <select id="pools">
+                {% comment %} <option value=""> Seleccione (nombre de pool - stratum host name - algoritmo) </option> {% endcomment %}
+                {% for pool in pools %}
+                <option value="{{pool.id}}///{{pool.algorithm}}///{{pool.stratumHostname}}">
+                    {{ forloop.counter }}: {{pool.name}} - {{pool.stratumHostname}} - {{pool.algorithm}}
+                </option>
+                {% endfor %}
+            </select>
+        </td>
+        <td>
+            *
+        </td>
+    </tr>
     <tr>
         <td>*Amount</td>
         <td>
@@ -23,120 +46,46 @@
             *
         </td>
     </tr>
-    <tr>
-        <td>Miner </td>
-        <td>
-            <input type="text" id="miner_find" name="miner_find" value="0x00192Fb10dF37c9FB26829eb2CC623cd1BF599E8">
-        </td>
-        <td>
-            Ciclo encontrar nuevos bloques ((),(c/limit -90%), (y detener))
-
-        </td>
-    </tr>
      <tr>
         <td><label>*Limit</label> </td>
-        <td><input id="limit_inp" type="number" step="any" name="limit" value="{{limit}}"> THs</td>
+        <td><input id="limit" type="number" step="any" name="limit" value="0.001"> THs</td>
         <td>
             *
         </td>
     </tr> 
-    <tr>
-        <td><label>Limit 2 </label> </td>
-        <td><input id="limit_inp_2" type="number" step="any" name="limit_2" value="0.01"> THs</td>
-        <td>
-            Ciclo actualizar limit
-        </td>
-    </tr> 
-    <tr>
-        <td><label>*Seleccionar Pool:</label></td>
-        <td>
-            <select id="pools">
-                {% for pool in pools %}
-                <option value="{{pool.id}}///{{pool.algorithm}}///{{pool.stratumHostname}}">
-                    {{ forloop.counter }}: {{pool.name}} - {{pool.algorithm}}
-                </option>
-                {% endfor %}
-            </select>
-
-        </td>
-        <td>
-            *
-        </td>
-
-    </tr>
     <tr>
         <td>Time </td>
         <td>
-            <input type="number" name="tiempo_limit" value="20" id="time_limit"> Min
+            <input type="number" name="time_up" value="3" id="time_up"> Min
         </td>
         <td>
-            Ciclo actualizar limit
+            Tiempo UP (ON)
         </td>
     </tr>
 </table>
-
-
-
 <br>
-
-
-
-
-
-
-<div>
-    
-    <form action="#">
-
-    <label>Seleccionar tarea:</label>
-
-        <ul>
-            <li> 
-                <input type="radio" name="tipo" id="find_blocks" value="findon" checked> 
-                <label for="find_blocks">Ciclo encontrar nuevos bloques</label>
-            </li>
-            <li>
-                <input type="radio" name="tipo" id="cicle_limit" value="cicleon" > 
-                <label for="cicle_limit">Ciclo actualizar limit</label>
-            </li>
-            <li>
-                <input type="radio" name="tipo" id="find_block_limit" value="findlimiton">
-                <label for="find_block_limit"> Ciclo encontrar nuevos bloques (c/limit -90%) </label>
-            </li>
-            <li>
-                <input type="radio" name="tipo" id="find_block_stop" value="findstopon">
-                <label for="find_block_stop"> Ciclo encontrar nuevos bloques (y detener) </label>
-            </li>
-        </ul>
-
-    </form>
-
+<br>
 </div>
 
-<br>
-
-</div>
-
-Programar tarea periódica:
+Crear orden cada <b>n</b> tiempo:
 Si<input type="radio" name="periodica" id="periodica_si" value="si" checked>
 No<input type="radio" name="periodica" id="periodica_no" value="no">
 <br><br>
 <form action="#">
 
     Cada
-    <input type="number" id="intervalo" name="intervalo" value="1">
+    <input type="number" id="intervalo" name="intervalo" value="5">
     <select name="tipo_intervalo" id="tipo_intervalo">
-        <option value="dia">Día(s)</option>    
-        <option value="hora">Hora(s)</option>
         <option value="minuto">Minuto(s)</option>
-        
+        <option value="hora">Hora(s)</option>
+        <option value="dia">Día(s)</option>    
     </select>
     Inicio:
     <input type="time" name="inicio" id="inicio" value="{{hora}}:{{minuto}}">
 </form>
 <br>
 <center>
-<button id="btnstart">Iniciar</button>
+<button id="btnstart">Crear tarea</button>
 </center>
 <br>
 <br><br>
@@ -144,7 +93,6 @@ Log:<br>
 <span id="status"></span>
 
 <div id="info_blocks">
-
     <textarea id="log-task" cols="150" rows="20" readonly></textarea>
     <br>
 </div>
@@ -154,11 +102,11 @@ Log:<br>
     {{schedule.period}}
     {{schedule.last_run_at}}
 {% endfor%}-->
-<h4>Tareas</h4>
+<h4>Tareas actuales</h4>
 <table>
     <tr>
         <th>Status</th>
-        <th>NOmbre</th>
+        <th>Nombre</th>
         <th>Periodica </th>
         <th>Inicio</th>
         <th>Cada</th>
@@ -188,7 +136,7 @@ Log:<br>
 <h4>Resultado de Tareas</h4>
 <table>
     <tr>
-        <th>NOmbre</th>
+        <th>Nombre</th>
         <th>Tarea periodica</th>
         <th>Id</th>
         <th>Status</th>
@@ -261,32 +209,7 @@ Log:<br>
         document.querySelector('#status').innerHTML=message['status'];
         document.querySelector('#status').className=message['status'];
         scroll();
-
         console.log(message)
-        {% comment %} if('encontrados' in message){
-            document.querySelector('#num_bloques').innerHTML=message['num_bloques'];
-            document.querySelector('#sum_luck_bloques').innerHTML=message['sum_luck_bloques'];
-            document.querySelector('#prom_luck_bloques').innerHTML=message['prom_luck_bloques'];
-            document.querySelector('#encontrados').innerHTML=message['encontrados'];
-            document.querySelector('#task_id').value=message['task_id'];
-            document.querySelector('#order_id').value=message['order_id'];
-
-            document.querySelector('#log-task').value+=(
-                '\n'+'Numero de bloques: '+ message['num_bloques']+'\n'+
-                'Suma luck: '+message['sum_luck_bloques']+'\n'+
-                'Promedio luck: '+message['prom_luck_bloques']+'\n'+
-                '++++++++++++++++++++++'+'\n'
-            );
-        }else if('encontrado' in message){
-            document.querySelector('#task_id').value=message['task_id'];
-            document.querySelector('#log-task').value+=(
-                'Miner: '+message['miner']+'\n'+
-                'Bloques: '+message['encontrado']+'\n'+
-                '++++++++++++++++++++++'+'\n'
-            );
-        } {% endcomment %}
-        
-        
 
     };
 
@@ -296,62 +219,35 @@ Log:<br>
 
     document.querySelector('#btnstart').onclick = function(e) {
         
-        console.log('test');
+        console.log('boton enviar datos');
         
-        limite=document.querySelector('#limit_inp').value;
-        limite2=document.querySelector('#limit_inp_2').value;
-        time_limit=document.querySelector('#time_limit').value;
+        //parametros orden
+        limite=document.querySelector('#limit').value;
+        time_up=document.querySelector('#time_up').value;
+        pool=document.querySelector('#pools').value;
+        amount=document.querySelector('#amount').value;
+        //parametros tarea
         inicio=document.querySelector('#inicio').value;
         tipo_intervalo=document.querySelector('#tipo_intervalo').value;
         intervalo=document.querySelector('#intervalo').value;
-        miner_find=document.querySelector('#miner_find').value;
-        pool=document.querySelector('#pools').value;
-        amount=document.querySelector('#amount').value;
-        tipo="";
-        console.log(
-                document.querySelector('#find_blocks').checked,
-                document.querySelector('#cicle_limit').checked
-            );
-        
-        tipo_nombre='';
-        if(document.querySelector('#find_blocks').checked==true){
-            tipo='add_tarea';
-            tipo_nombre='find_blocks';
-        }   
-        else if (document.querySelector('#cicle_limit').checked==true){
-            tipo='add_tarea';
-            tipo_nombre='ciclo_limit';
-        }
-        else if (document.querySelector('#find_block_limit').checked==true){
-            tipo='add_tarea';
-            tipo_nombre='find_blocks_limit';
-        }
-        else if (document.querySelector('#find_block_stop').checked==true){
-            tipo='add_tarea';
-            tipo_nombre='find_blocks_stop';
-        }
-        else{
-            tipo='effort';
-        }   
+        tipo='add_tarea';
         periodica='no';
         if(document.querySelector('#periodica_si').checked==true){
             periodica='si';
         }
 
         params={
-                    'tipo_nombre':tipo_nombre,
                     'inicio':inicio,
                     'amount':amount,
-                    'miner_find': miner_find,
-                    'time_limit':time_limit,
+                    'time_up':time_up,
                     'limite':limite,
-                    'limite_2':limite2,
                     'intervalo':intervalo,
                     'tipo_intervalo':tipo_intervalo,
                     'periodica':periodica,
                     'pool':pool
                 }
         console.log(params);
+        //enviar datos
         tareaSocket.send(JSON.stringify({
             'message': {
                 'tipo':tipo,
@@ -362,19 +258,14 @@ Log:<br>
         
     };
 
-    
-
     function del_task(id,periodica_yn){
         tareaSocket.send(JSON.stringify({
             'message': {
                 'tipo':'del_task',
                 'params':{
-                    'periodica':'no',
                     'task_id':id,
-                    'periodica':periodica_yn,
-                    'time_limit':time_limit
+                    'periodica':periodica_yn
                 }
-                
             }
         }));
     }
