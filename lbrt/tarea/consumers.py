@@ -43,7 +43,7 @@ class TareaConsumer(WebsocketConsumer):
         limite=""
         
         time_up=0
-        porcentaje=-3
+        porcentaje=0
         porcentaje_decimal=0
 
         # DATOS PARA ORDEN NICEHASH
@@ -59,7 +59,7 @@ class TareaConsumer(WebsocketConsumer):
             if (stratum_host_name=='etc.2miners.com'):
                 porcentaje=5
             elif (stratum_host_name=='etc.poolbinance.com'):
-                porcentaje=3
+                porcentaje=-3
             elif (stratum_host_name=='eu.etc.k1pool.com'):
                 porcentaje=0
             print('porcentaje stratum:')
