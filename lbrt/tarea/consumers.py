@@ -49,8 +49,12 @@ class TareaConsumer(WebsocketConsumer):
         # DATOS PARA ORDEN NICEHASH
         if ('time_up' in message['params']):
             time_up=message['params']['time_up']
-            time_up=time_up*60
-
+            print('tiempo recibido:')
+            print(time_up)
+            time_up=float(time_up)*60
+            print('tiempo convertido a segundos:')
+            print(time_up)
+            
         if('pool' in message['params']):
             pool_id=message['params']['pool'].split('///')[0]
             pool_algorithm=message['params']['pool'].split('///')[1]
@@ -156,7 +160,7 @@ class TareaConsumer(WebsocketConsumer):
                     interval=schedule,                  
                     name=name_tarea,
                     task='tarea.tasks.chain_order_up', 
-                    args=json.dumps([str(self.channel_name),pool_id, pool_algorithm,time_up, amount,limite,porcentaje_decimal])
+                    args=json.dumps([str(self.channel_name),pool_id, pool_algorithm,time_up, amount,limite,porcentaje_decimal,name_tarea])
                     )
                 else:
                     cp=PeriodicTask.objects.create(
@@ -165,7 +169,7 @@ class TareaConsumer(WebsocketConsumer):
                     interval=schedule,                  
                     name=name_tarea,
                     task='tarea.tasks.chain_order_up', 
-                    args=json.dumps([str(self.channel_name),pool_id, pool_algorithm,time_up, amount,limite,porcentaje_decimal])
+                    args=json.dumps([str(self.channel_name),pool_id, pool_algorithm,time_up, amount,limite,porcentaje_decimal,name_tarea])
                     )
 
                 print('Tarea periodica creada: ')

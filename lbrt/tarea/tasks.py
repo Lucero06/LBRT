@@ -51,23 +51,27 @@ headers = {
 
 #tarea que llama a tareas funciones , busca bloques
 @app.task
-def chain_order_up(channel_name, pool_id, pool_algorithm, time_up,amount, limit, porcentaje_decimal):
-    res = (iniciar_orden.s(str(channel_name), limit,pool_id,pool_algorithm, amount, porcentaje_decimal) | time_up_task.s(str(channel_name),time_up) | detener_orden.s(str(channel_name))  )()
+def chain_order_up(channel_name, pool_id, pool_algorithm, time_up,amount, limit, porcentaje_decimal,name_tarea):
+    res = (iniciar_orden.s(str(channel_name), limit,pool_id,pool_algorithm, amount, porcentaje_decimal,name_tarea) | time_up_task.s(str(channel_name),time_up,name_tarea) | detener_orden.s(str(channel_name),name_tarea))()
     return res
 #
 
 @shared_task
-def iniciar_orden(channel_name, limit, pool, algoritmo, amount, porcentaje_decimal):
+def iniciar_orden(channel_name, limit, pool, algoritmo, amount, porcentaje_decimal,name_tarea):
+    print(name_tarea)
     print('Tarea iniciar_orden iniciada... ')
     async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": 
                                             {
                                                 'log_time':str(datetime.now()),
                                                 'status':'on',
-                                                'msj:': 'Tarea iniciar_orden iniciada...'
+                                                'msj:': str(name_tarea)+': Tarea iniciar_orden iniciada...'
                                             
                                             }
                                       })
+    #oruebas
+    #return 'TEST ORDER ID'
+    #end pruebas
     public_api = nicehash.public_api('https://api2.nicehash.com', True)
     algorithms = public_api.get_algorithms()
     
@@ -100,6 +104,7 @@ def iniciar_orden(channel_name, limit, pool, algoritmo, amount, porcentaje_decim
     #print(algorithms)
     async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": {
+                                            'tarea':str(name_tarea),
                                             'log_time':str(datetime.now()),
                                             'status':'on',
                                             'algoritmo':algoritmo,
@@ -116,6 +121,7 @@ def iniciar_orden(channel_name, limit, pool, algoritmo, amount, porcentaje_decim
 
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": {
+                                            'tarea':str(name_tarea),
                                             'log_time':str(datetime.now()),
                                             'status':'off',
                                             'ERROR':new_order['errors']
@@ -126,6 +132,7 @@ def iniciar_orden(channel_name, limit, pool, algoritmo, amount, porcentaje_decim
         order_id=new_order['id']
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": {
+                                            'tarea':str(name_tarea),
                                             'log_time':str(datetime.now()),
                                             'status':'on',
                                             'msj':'Orden creada...',
@@ -135,26 +142,31 @@ def iniciar_orden(channel_name, limit, pool, algoritmo, amount, porcentaje_decim
         return order_id
 
 @shared_task
-def time_up_task(order_id,channel_name,time_up):
+def time_up_task(order_id,channel_name,time_up,name_tarea):
     try:
-        print('Tarea find n blocks iniciada... ')
+        print(name_tarea)
+        print('Tarea time up iniciada... ')
+        print('tiempo:')
+        print(time_up)
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                             "message": 
                                                 {
+                                                    'tarea':str(name_tarea),
                                                     'log_time':str(datetime.now()),
                                                     'status':'on',
-                                                    'msj:':'Tarea find n blocks iniciada...',
-                                                    'order_id':order_id
+                                                    'msj:':'Tarea time_up iniciada...',
+                                                    'order_id':order_id,
+                                                    'tiempo': str(time_up)
                                                 }
                                         })
-        
-        time.sleep(time_up)
+        time.sleep(int(time_up))
 
     except Exception as e:
         logger.error('ERROR capturado:')
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": 
                                             {
+                                                'tarea':str(name_tarea),
                                                 'log_time':str(datetime.now()),
                                                 'status':'on',
                                                 'msj':'ERROR capturado',
@@ -164,6 +176,7 @@ def time_up_task(order_id,channel_name,time_up):
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": 
                                             {
+                                                'tarea': str(name_tarea),
                                                 'log_time':str(datetime.now()),
                                                 'status':'on',
                                                 'msj':str(e),
@@ -175,13 +188,15 @@ def time_up_task(order_id,channel_name,time_up):
     return order_id
 
 @shared_task
-def detener_orden(order_id,channel_name):
+def detener_orden(order_id,channel_name,name_tarea):
+    print(name_tarea)
     print('Tarea detener orden iniciada... ')
     print('order id: ')
     print(order_id)
     async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": 
                                             {
+                                                'tarea':str(name_tarea),
                                                 'log_time':str(datetime.now()),
                                                 'status':'on',
                                                 'msj':'Tarea detener orden iniciada... ',
@@ -206,6 +221,7 @@ def detener_orden(order_id,channel_name):
     async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message", 
                                         "message": 
                                             {
+                                                'tarea':str(name_tarea),   
                                                 'log_time':str(datetime.now()),
                                                 'status':'off',
                                                 'msj':'Orden detenida',
