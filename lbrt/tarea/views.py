@@ -72,7 +72,30 @@ class TareaView(TemplateView):
                 context['pools']+=pools_on_page['list']
         print(context['pools'])
 
+        # Datos Cuenta Balance
+        balance = private_api.get_accounts_for_currency('BTC')
+        balance_currency=''
+        balance_available=0
+        balance_total=0
+        balance_debt=0
+        balance_pending=0
+        balance_btcRate=0
+        if (not 'errors' in balance):
+            balance_total=balance['totalBalance']
+            balance_available=balance['available']
+            balance_debt=balance['debt']
+            balance_pending=balance['pending']
+            balance_btcRate=balance['btcRate']
+            balance_currency=balance['currency']
+        context['balance_total']=balance_total
+        context['balance_available']=balance_available
+        context['balance_debt']=balance_debt
+        context['balance_pending']=balance_pending
+        context['balance_btcRate']=balance_btcRate
+        context['balance_currency']=balance_currency
 
+        # balance_currency=balance['']
+        print(balance)
         #Valores por defecto para la interfaz (y que se pueden cambiar en interfaz)
         #limit=0.1
         #amount=0.001

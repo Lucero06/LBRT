@@ -175,8 +175,9 @@ class private_api:
     def get_accounts(self): #balances
         return self.request('GET', '/main/api/v2/accounting/accounts2/', '', None)
 
-    def get_accounts_for_currency(self, currency): #balance
-        return self.request('GET', '/main/api/v2/accounting/account2/' + currency, '', None)
+    def get_accounts_for_currency(self, currency, extended=True): #balance
+        params = "extendedResponse={}".format(extended)
+        return self.request('GET', '/main/api/v2/accounting/account2/' + currency, params, None)
 
     def get_withdrawal_addresses(self, currency, size, page):
 

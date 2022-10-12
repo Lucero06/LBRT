@@ -9,13 +9,22 @@ body{
 #log-task{
 	width: 100%;
 }
-table{
+.balance-container{
+	width: 100%;
+	position: relative;
+}
+.balance-container table{
+	position: absolute;
+	right: 0;
+}
+.balance-container tr:nth-child(1){
+	text-align: right;
+}
+table.ordenes{
 	border-collapse: collapse;
 }
-
-table td, th{
-	border: white 1px solid;
-	
+table.ordenes td, th{
+	border: white 1px solid;	
 }
 
 input,textarea{

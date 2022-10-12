@@ -7,6 +7,29 @@
 {% load static %}
 
 <link rel="stylesheet" type="text/css" href="{% static 'tarea/style.css' %}">
+<div class="balance-container">
+    <table>
+        <tr>
+            <td> Balance Total:
+            </td>
+            <td> {{balance_total}} {{balance_currency}}
+            </td>
+        </tr>
+        <tr>
+            <td> Pendiente:
+            </td>
+            <td> {{balance_pending}} {{balance_currency}}
+            </td>
+        </tr>
+        <tr>
+            <td> Disponible:
+            </td>
+            <td> {{balance_available}} {{balance_currency}}
+            </td>
+        </tr>
+    </table>
+
+</div>
 <div id="programar">
 <p>
     <h2 style="display:inline-block">
@@ -20,7 +43,7 @@
     
 Configuración de orden:
 <br><br>
-<table>
+<table class="ordenes">
     <tr>
         <td><label>*Pool:</label></td>
         <td>
@@ -103,7 +126,7 @@ Log:<br>
     {{schedule.last_run_at}}
 {% endfor%}-->
 <h4>Tareas actuales</h4>
-<table>
+<table class="ordenes">
     <tr>
         <th>Status</th>
         <th>Nombre</th>
@@ -134,7 +157,7 @@ Log:<br>
 
 
 <h4>Resultado de Tareas</h4>
-<table>
+<table class="ordenes">
     <tr>
         <th>Nombre</th>
         <th>Tarea periodica</th>
