@@ -2,9 +2,30 @@
 	font-family: system-ui;
 }
 body{
-	background-color: black;
-	color: white;
-	padding: 10px;
+	background-color:#98cbaf;
+	color: black;
+	/* padding: 10px; */
+}
+input, textarea, select{
+	background-color: aliceblue;
+	border-radius: 5px;
+}
+table.ordenes{
+	border-collapse: collapse;
+	/* border: 1px solid white;
+	border-radius: 10px; */
+}
+table.ordenes tr{
+	border: 2px solid black;
+}
+button{
+	border-radius: 10px;
+	background-color: whitesmoke;
+	border: 2px solid black;
+}
+button:hover{
+	cursor: pointer;
+	background-color: aliceblue;
 }
 #log-task{
 	width: 100%;
@@ -14,18 +35,16 @@ body{
 	position: relative;
 }
 .balance-container table{
-	position: absolute;
-	right: 0;
+	float: right;
 }
 .balance-container tr:nth-child(1){
 	text-align: right;
 }
-table.ordenes{
-	border-collapse: collapse;
-}
-table.ordenes td, th{
-	border: white 1px solid;	
-}
+
+/* table.ordenes td{
+	border: white 1px solid;
+} */
+
 
 input,textarea{
 	color: black;
