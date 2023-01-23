@@ -10,6 +10,7 @@ from . import nicehash
 import requests
 import json
 from django.db.models import Q
+from django.db.models import Count
 from django_celery_beat.models import CrontabSchedule, PeriodicTask, IntervalSchedule
 from django_celery_results.models import TaskResult
 
@@ -132,10 +133,13 @@ class TareaView(TemplateView):
         # tasks_results=TaskResult.objects.all().values('task_id').distinct()
 
         # Obtener Datos Resultados de Tareas
+        tasks_not_ended = Count('id', filter=~Q(
+            tasks__task_object__status__in=['SUCCESS', 'REVOKED']))
         orders = Order.objects.prefetch_related(
-            'tasks').order_by('-id').all().filter(~Q(status='Detenida')
-                                                  | Q(inicio=date.today())
-                                                  )
+            'tasks').annotate(num_tasks=tasks_not_ended).order_by('-id').all().filter(~Q(status='Detenida')
+                                                                                      | Q(inicio=date.today())
+                                                                                      | Q(num_tasks__gt=0)
+                                                                                      )
         # print('orders:')
         # print(orders[0].tasks.__dict__)
         tasks = Task.objects.select_related("order").order_by('-id').all()[:5]
