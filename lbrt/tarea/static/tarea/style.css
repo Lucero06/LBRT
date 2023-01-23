@@ -1,71 +1,86 @@
-*{
+* {
 	font-family: system-ui;
 }
-body{
-	background-color:#98cbaf;
+
+body {
+	background-color: #d2e7db;
 	color: black;
-	/* padding: 10px; */
 }
-input, textarea, select{
+
+input,
+textarea,
+select {
 	background-color: aliceblue;
 	border-radius: 5px;
 }
-table.ordenes{
+
+table {
+	background-color: #98cbaf;
 	border-collapse: collapse;
-	/* border: 1px solid white;
-	border-radius: 10px; */
 }
-table.ordenes tr{
+
+
+tr,
+td {
 	border: 2px solid black;
 }
-button{
+
+button {
 	border-radius: 10px;
-	background-color: whitesmoke;
+	font-weight: bold;
+	background-color: palegreen;
 	border: 2px solid black;
 }
-button:hover{
+
+button:disabled {
+	/* background-color: #c3b4b3; */
+	background-color: #98cbaf;
+}
+
+button:hover {
 	cursor: pointer;
 	background-color: aliceblue;
 }
-#log-task{
+
+#log-task {
 	width: 100%;
 }
-.balance-container{
+
+.balance-container {
 	width: 100%;
 	position: relative;
 }
-.balance-container table{
+
+.balance-container table {
 	float: right;
 }
-.balance-container tr:nth-child(1){
+
+.balance-container tr:nth-child(1) {
 	text-align: right;
 }
 
-/* table.ordenes td{
-	border: white 1px solid;
-} */
 
-
-input,textarea{
+input,
+textarea {
 	color: black;
 }
 
-#status{
+#status {
 	font-weight: bolder;
-	
+
 }
 
-.on{
+.on {
 	color: green;
-	
+
 }
 
-.off{
+.off {
 	color: red;
-	
+
 }
 
 
-#status::before{
+#status::before {
 	content: '•';
 }

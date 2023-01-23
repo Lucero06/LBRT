@@ -31,18 +31,18 @@
 
 </div>
 <div id="programar">
+
+<h2 style="display:inline-block">
+    Creación de ordenes 
+    <span style="font-size:.56em">
+        Tarea que crea orden y actualiza el limit cada n tiempo.
+    </span>
+</h2>
 <p>
-    <h2 style="display:inline-block">
-        Creación de ordenes 
-        <span style="font-size:.56em">
-            Tarea que crea orden y la mantiene arriba por un tiempo determinado.
-        </span>
-    </h2>
-    
-</p>
-    
-Configuración de orden:
-<br><br>
+    Configuración de orden:
+</p>    
+
+
 <table class="ordenes">
     <tr>
         <td><label>*Pool:</label></td>
@@ -56,46 +56,49 @@ Configuración de orden:
                 {% endfor %}
             </select>
         </td>
-        <td>
-            *
-        </td>
+        
     </tr>
     <tr>
         <td>*Amount</td>
         <td>
             <input type="number" step="any" name="amount" id="amount" value="0.001"> BTC
         </td>
-        <td>
-            *
-        </td>
+        
     </tr>
      <tr>
-        <td><label>*Limit</label> </td>
-        <td><input id="limit" type="number" step="any" name="limit" value="0.001"> THs</td>
-        <td>
-            *
-        </td>
+        <td><label>*Limit arriba</label> </td>
+        <td><input id="limit_up" type="number" step="any" name="limit_up" value="0.1"> THs</td>
+        
     </tr> 
     <tr>
-        <td>Time </td>
+        <td><label>*Limit abajo</label> </td>
+        <td><input id="limit_down" type="number" step="any" name="limit_down" value="0.02"> THs</td>
+        
+    </tr> 
+    <tr>
+        <td>Tiempo arriba</td>
         <td>
-            <input type="number" name="time_up" value="3" id="time_up"> Min
+            <input type="number" name="time_up" value="1" id="time_up"> Min
         </td>
+        
+    </tr>
+    <tr>
+        <td>Tiempo abajo</td>
         <td>
-            Tiempo UP (ON)
+            <input type="number" name="time_down" value="3" id="time_down"> Min
         </td>
+        
     </tr>
 </table>
 <br>
 <br>
 </div>
 
-Crear orden cada <b>n</b> tiempo:
-Si<input type="radio" name="periodica" id="periodica_si" value="si" checked>
-No<input type="radio" name="periodica" id="periodica_no" value="no">
+Repetir tarea cada <b>n</b> tiempo:
+Si<input type="radio" name="periodica" id="periodica_si" value="si" >
+No<input type="radio" name="periodica" id="periodica_no" value="no" checked>
 <br><br>
 <form action="#">
-
     Cada
     <input type="number" id="intervalo" name="intervalo" value="5">
     <select name="tipo_intervalo" id="tipo_intervalo">
@@ -116,74 +119,44 @@ Log:<br>
 <span id="status"></span>
 
 <div id="info_blocks">
-    <textarea id="log-task" cols="150" rows="20" readonly></textarea>
+    <textarea id="log-task" cols="150" rows="15" readonly></textarea>
     <br>
 </div>
 
-<!--{% for schedule in schedules %}
-    {{schedule.every}}
-    {{schedule.period}}
-    {{schedule.last_run_at}}
-{% endfor%}-->
-<h4>Tareas actuales</h4>
+<h4>Tareas</h4>
 <table class="ordenes">
     <tr>
-        <th>Status</th>
-        <th>Nombre</th>
-        <th>Periodica </th>
-        <th>Inicio</th>
-        <th>Cada</th>
-        <th>Intervalo</th>
-        <th>Tarea</th>
-        <th>Id</th>
-        <th>Acciones</th>
+        <th>ID<br>ORDEN</th>
+        <th>Fecha<br>ORDEN</th>
+        <th>status<br>ORDEN</th>
+        <th>task id</th>
+        <th>Fecha</th>
+        <th>status</th>
     </tr>
-{% for task in periodic_tasks %}
-<tr>
-    <td>{{task.enabled}}</td>
-    <td>{{task.name}}</td>
-    <td>
-        {% if task.one_off == True %} No {% else %} Si {% endif %}
-    </td>
-    <td>{{task.last_run_at}}</td>
-    <td>{{task.interval.every}}</td>
-    <td>{{task.interval.period}}</td>
-    <td>{{task.task}}</td>
-    <td>{{task.id}}</td>
-    <td><button disabled>Desactivar</button> <button onclick="del_task({{task.id}},'periodica_si')">Eliminar</button> <button disabled>Informacion</button></td>
-</tr>
-{% endfor%}
-</table>
-
-
-<h4>Resultado de Tareas</h4>
-<table class="ordenes">
+    {% for order in orders %}
     <tr>
-        <th>Nombre</th>
-        <th>Tarea periodica</th>
-        <th>Id</th>
-        <th>Status</th>
-        <th>Ejecución</th>
-    </tr>
-    {% for task in tasks_results %}
-    <tr>
-        
-        <td>{{task.task_name}}</td>
-        <td>{{task.periodic_task_name}}</td>
-        <td>{{task.task_id}}</td>
-        <td>{{task.status}}</td>
-        <td>{{task.result}}</td>
-        
+        <td>{{order.order_id}}</td>
+        <td>{{order.inicio}}</td>
+        <td>{{order.status}}</td>
+        <td>{{order.tasks.all.0.task_id}}</td>
+        <td>{{order.tasks.all.0.inicio}}</td>
+        <td>{{order.tasks.all.0.task_object.status}}</td>
+        <td>
+            <button onclick="stop_task('{{order.tasks.all.0.task_id}}')"
+            {% if order.tasks.all.0.task_object.status in "SUCCESS,REVOKED" %}
+            disabled
+            {% endif %}
+            >Finalizar tarea</button>
+            <button onclick="stop_order('{{order.order_id}}')"
+            {% if order.status == 'Detenida' %}
+            disabled
+            {% endif %}
+            >Detener orden</button>
+        </td>
     </tr>
     {% endfor%}
 </table>
 
-
-<div id="tarea_actual">
-
-
-
-</div>
 
 {% endblock %}
 
@@ -241,12 +214,11 @@ Log:<br>
     };
 
     document.querySelector('#btnstart').onclick = function(e) {
-        
-        console.log('boton enviar datos');
-        
         //parametros orden
-        limite=document.querySelector('#limit').value;
+        limit_up=document.querySelector('#limit_up').value;
+        limit_down=document.querySelector('#limit_down').value;
         time_up=document.querySelector('#time_up').value;
+        time_down=document.querySelector('#time_down').value;
         pool=document.querySelector('#pools').value;
         amount=document.querySelector('#amount').value;
         //parametros tarea
@@ -254,6 +226,7 @@ Log:<br>
         tipo_intervalo=document.querySelector('#tipo_intervalo').value;
         intervalo=document.querySelector('#intervalo').value;
         tipo='add_tarea';
+        
         periodica='no';
         if(document.querySelector('#periodica_si').checked==true){
             periodica='si';
@@ -263,7 +236,9 @@ Log:<br>
                     'inicio':inicio,
                     'amount':amount,
                     'time_up':time_up,
-                    'limite':limite,
+                    'time_down':time_down,
+                    'limit_up':limit_up,
+                    'limit_down':limit_down,
                     'intervalo':intervalo,
                     'tipo_intervalo':tipo_intervalo,
                     'periodica':periodica,
@@ -280,6 +255,29 @@ Log:<br>
         }));
         
     };
+
+    function stop_task(task_id){
+        
+        tareaSocket.send(JSON.stringify({
+            'message': {
+                'tipo':'stop_task',
+                'params':{
+                    'task_id':task_id
+                }
+            }
+        }));
+    }
+
+    function stop_order(order_id){
+        tareaSocket.send(JSON.stringify({
+            'message': {
+                'tipo':'stop_order',
+                'params':{
+                    'order_id':order_id
+                }
+            }
+        }));
+    }
 
     function del_task(id,periodica_yn){
         tareaSocket.send(JSON.stringify({

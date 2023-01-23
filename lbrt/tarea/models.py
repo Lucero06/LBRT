@@ -1,28 +1,21 @@
 from django.db import models
+from django_celery_beat.models import CrontabSchedule, PeriodicTask, IntervalSchedule
+from django_celery_results.models import TaskResult
 
 # Create your models here.
 
 
-class Tarea(models.Model):
-	inicio = models.DateField()
-	effort = models.CharField(max_length=50)
-	luck = models.CharField(max_length=50)
-	sum_luck = models.CharField( max_length=50)
-	sum_prom = models.CharField( max_length=50)
-	num_blocks = models.CharField( max_length=50)
-	orden_id = models.CharField( max_length=50)
-	time = models.CharField( max_length=50)
-	limit = models.CharField( max_length=50)
-	time_on = models.CharField( max_length=50)
-	tipo=models.CharField(max_length=50)
+class Order(models.Model):
+    inicio = models.DateField(auto_now_add=True)
+    order_id = models.TextField()
+    status = models.TextField(default='Iniciada')
 
 
-# class TareaPeriodica(models.Model):
-# 	task_id = models.TextField()
-# 	task_schedule_id = models.TextField()
-# 	tipo=models.CharField(max_length=100) #schedule, crontab, solar , etc
-# 	running = models.BooleanField()
-# 	last_run = models.DateTimeField()
-# 	error = models.BooleanField()
-# 	last_error = models.DateTimeField()
-# 	description_error = models.BooleanField()
+class Task(models.Model):
+    order = models.ForeignKey(
+        Order, on_delete=models.PROTECT, related_name='tasks')
+    inicio = models.DateField(auto_now=True, auto_now_add=False)
+    task_name = models.TextField()
+    task_id = models.TextField()
+    task_object = models.ForeignKey(
+        TaskResult, to_field='id', on_delete=models.PROTECT, null=True, related_name='tasks_results')

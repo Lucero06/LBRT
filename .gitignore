@@ -1,7 +1,6 @@
 envchatbot
 envchatbot/
 .env/
-
 __pycache__
 *.pyc
 .env
@@ -9,3 +8,4 @@ db.sqlite3
 celerybeat-schedule
 logs/*
 static/*
+migrations/

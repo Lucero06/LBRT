@@ -9,7 +9,7 @@ import pytz
 from . import nicehash
 import requests
 import json
-
+from django.db.models import Q
 from django_celery_beat.models import CrontabSchedule, PeriodicTask, IntervalSchedule
 from django_celery_results.models import TaskResult
 
@@ -18,113 +18,135 @@ from django.contrib.admin.views.decorators import staff_member_required
 
 from decouple import config
 
+from tarea.models import Order, Task
+
+from django import template
+
+register = template.Library()
+
+
+@register.filter()
+def query_filter(value, attr):
+    return value.filter(**eval(attr))
+
+
 @method_decorator(staff_member_required, name='dispatch')
 class TareaView(TemplateView):
 
     template_name = 'tarea/tarea.html'
 
-    #print(pools_on_fist_page)
-    #pools=json.loads(pools_on_fist_page)
+    # print(pools_on_first_page)
+    # pools=json.loads(pools_on_first_page)
 
     def get_context_data(self, **kwargs):
-        #Datos que se van a mostrar en la interfaz (template, vista) en la pantalla que ve el usuario
-        
-        #Dato hora actual
+        # Datos que se van a mostrar en la interfaz (template, vista) en la pantalla que ve el usuario
+
+        # Dato hora actual
         context = super().get_context_data(**kwargs)
-        hora= datetime.now().hour
+        hora = datetime.now().hour
         context['hora'] = str(hora).zfill(2)
-        minuto=datetime.now()
-        #minuto=minuto+timedelta(minutes=1)
+        minuto = datetime.now()
+        # minuto=minuto+timedelta(minutes=1)
         context['minuto'] = str(minuto.minute).zfill(2)
-        context['segundo'] =  datetime.now().second
+        context['segundo'] = datetime.now().second
 
-        #Conexión y datos NiceHash
-        host=config('HOST_NC')
-        organization_id=config('ORG_ID_NC')
-        key=config('KEY_NC')
-        secret=config('SECRET_NC')
+        # Conexión y datos NiceHash
+        host = config('HOST_NC')
+        organization_id = config('ORG_ID_NC')
+        key = config('KEY_NC')
+        secret = config('SECRET_NC')
 
-        private_api = nicehash.private_api(host, organization_id, key
-        , secret, True)
-        
-        pools_on_fist_page=''
-        
+        private_api = nicehash.private_api(
+            host, organization_id, key, secret, True)
+
+        pools_on_first_page = ''
+
         try:
-            #pass
-            pools_on_fist_page = private_api.get_my_pools('', '')
+            # pass
+            pools_on_first_page = private_api.get_my_pools('', '')
         except Exception as inst:
             print('exception?')
             print(type(inst))    # the exception instance
             print(inst.args)     # arguments stored in .args
-            print(inst)   
+            print(inst)
 
-        #Datos pools
-        #print(pools_on_fist_page)
-        context['pools']=pools_on_fist_page['list']
-        print(len(pools_on_fist_page['list']))
-        total_pages=int(pools_on_fist_page['pagination']['totalPageCount'])
-        if ( total_pages > 1):
+        # Datos pools
+        # print(pools_on_first_page)
+        context['pools'] = pools_on_first_page['list']
+        # print(len(pools_on_first_page['list']))
+        total_pages = int(pools_on_first_page['pagination']['totalPageCount'])
+        if (total_pages > 1):
             for i in range(total_pages-1):
                 print(i+1)
                 pools_on_page = private_api.get_my_pools(i+1, '')
-                #print(pools_on_page)
+                # print(pools_on_page)
                 print(len(pools_on_page['list']))
-                context['pools']+=pools_on_page['list']
-        print(context['pools'])
+                context['pools'] += pools_on_page['list']
+        # print(context['pools'])
 
         # Datos Cuenta Balance
         balance = private_api.get_accounts_for_currency('BTC')
-        balance_currency=''
-        balance_available=0
-        balance_total=0
-        balance_debt=0
-        balance_pending=0
-        balance_btcRate=0
+        balance_currency = ''
+        balance_available = 0
+        balance_total = 0
+        balance_debt = 0
+        balance_pending = 0
+        balance_btcRate = 0
         if (not 'errors' in balance):
-            balance_total=balance['totalBalance']
-            balance_available=balance['available']
-            balance_debt=balance['debt']
-            balance_pending=balance['pending']
-            balance_btcRate=balance['btcRate']
-            balance_currency=balance['currency']
-        context['balance_total']=balance_total
-        context['balance_available']=balance_available
-        context['balance_debt']=balance_debt
-        context['balance_pending']=balance_pending
-        context['balance_btcRate']=balance_btcRate
-        context['balance_currency']=balance_currency
+            balance_total = balance['totalBalance']
+            balance_available = balance['available']
+            balance_debt = balance['debt']
+            balance_pending = balance['pending']
+            balance_btcRate = balance['btcRate']
+            balance_currency = balance['currency']
+        context['balance_total'] = balance_total
+        context['balance_available'] = balance_available
+        context['balance_debt'] = balance_debt
+        context['balance_pending'] = balance_pending
+        context['balance_btcRate'] = balance_btcRate
+        context['balance_currency'] = balance_currency
 
         # balance_currency=balance['']
-        print(balance)
-        #Valores por defecto para la interfaz (y que se pueden cambiar en interfaz)
-        #limit=0.1
-        #amount=0.001
-        #context['limit']=limit
-        #context['amount']=amount
+        # print(balance)
+        # Valores por defecto para la interfaz (y que se pueden cambiar en interfaz)
+        # limit=0.1
+        # amount=0.001
+        # context['limit']=limit
+        # context['amount']=amount
 
-        #Obtener Datos Tareas gaurdadas
-        schedules=IntervalSchedule.objects.all()
-        periodic_tasks=PeriodicTask.objects.order_by('-id').all()
-        periodic_tasks=list(periodic_tasks)
-        #print(periodic_tasks)
-        #class_date = timezone.localtime(self.class_date)
+        # Obtener Datos Tareas gaurdadas
+        schedules = IntervalSchedule.objects.all()
+        periodic_tasks = PeriodicTask.objects.order_by('-id').all()
+        periodic_tasks = list(periodic_tasks)
+        # print(periodic_tasks)
+        # class_date = timezone.localtime(self.class_date)
         timezone = pytz.timezone("America/Mexico_City")
         for task in periodic_tasks:
-            #print(task.last_run_at.astimezone(timezone).strftime('%H:%M'))
+            # print(task.last_run_at.astimezone(timezone).strftime('%H:%M'))
             if (task.last_run_at is not None):
-                task.last_run_at=task.last_run_at.astimezone(timezone).strftime('%H:%M')
-        #print(schedules.count())
-        #print(PeriodicTask.objects.values())
-        #print(TaskResult.objects.values())
-        #tasks_results=TaskResult.objects.all().values('task_id').distinct()
-        
-        #Obtener Datos Resultados de Tareas
-        tasks_results=TaskResult.objects.order_by('-id').all()[:5]
-        
-        #Datos Tareas y Resultados de tareas
-        context['schedules']=list(schedules)
-        context['periodic_tasks']=periodic_tasks
-        context['tasks_results']=list(tasks_results)
-        context['wsport']=config('WS_PORT')
-        #print(context)
+                task.last_run_at = task.last_run_at.astimezone(
+                    timezone).strftime('%H:%M')
+        # print(schedules.count())
+        # print(PeriodicTask.objects.values())
+        print(TaskResult.objects.values())
+        # tasks_results=TaskResult.objects.all().values('task_id').distinct()
+
+        # Obtener Datos Resultados de Tareas
+        orders = Order.objects.prefetch_related(
+            'tasks').order_by('-id').all().filter(~Q(status='Detenida')
+                                                  | Q(inicio=date.today())
+                                                  )
+        # print('orders:')
+        # print(orders[0].tasks.__dict__)
+        tasks = Task.objects.select_related("order").order_by('-id').all()[:5]
+        tasks_results = TaskResult.objects.order_by('-id').all()[:5]
+
+        # Datos Tareas y Resultados de tareas
+        context['schedules'] = list(schedules)
+        context['periodic_tasks'] = periodic_tasks
+        context['orders'] = list(orders)
+        context['tasks'] = list(tasks)
+        context['tasks_results'] = list(tasks_results)
+        context['wsport'] = config('WS_PORT')
+        # print(context)
         return context
