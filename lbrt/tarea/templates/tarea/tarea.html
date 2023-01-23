@@ -133,6 +133,7 @@ Log:<br>
         <th>Fecha</th>
         <th>status</th>
     </tr>
+    <tbody id="orders_body">
     {% for order in orders %}
     <tr>
         <td>{{order.order_id}}</td>
@@ -140,10 +141,14 @@ Log:<br>
         <td>{{order.status}}</td>
         <td>{{order.tasks.all.0.task_id}}</td>
         <td>{{order.tasks.all.0.inicio}}</td>
-        <td>{{order.tasks.all.0.task_object.status}}</td>
+        <td
+        {% if order.tasks.all.0.task_object.status in "SUCCESS,REVOKED" %}
+        class="success"
+        {% endif %}
+        >{{order.tasks.all.0.task_object.status}}</td>
         <td>
             <button onclick="stop_task('{{order.tasks.all.0.task_id}}')"
-            {% if order.tasks.all.0.task_object.status in "SUCCESS,REVOKED" %}
+            {% if order.tasks.all.0.task_object.status in "SUCCESS,REVOKED,FAILURE" %}
             disabled
             {% endif %}
             >Finalizar tarea</button>
@@ -155,12 +160,14 @@ Log:<br>
         </td>
     </tr>
     {% endfor%}
+    </tbody>
 </table>
 
 
 {% endblock %}
 
 {% block scripts%}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
 <script>
     function scroll(){
         document.querySelector('#log-task').scrollTop = document.querySelector('#log-task').scrollHeight;
@@ -181,8 +188,12 @@ Log:<br>
         var message = data['message'];  
 
         document.querySelector('#log-task').innerHTML+='\n\n';
-
-        if (message['log_time']){
+        if (message["update_orders"]){
+            $('#orders_body').html('').load(
+                "{% url 'order' %}"
+            ); 
+        }
+        else if (message['log_time']){
             document.querySelector('#log-task').innerHTML+=message['log_time'];
             document.querySelector('#log-task').innerHTML+=':';
             document.querySelector('#log-task').innerHTML+='\n';

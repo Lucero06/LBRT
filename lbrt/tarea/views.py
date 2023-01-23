@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.views.generic import TemplateView
+from django.shortcuts import render
 
 from datetime import datetime, timedelta, date
 from dateutil import tz
@@ -24,6 +25,31 @@ from tarea.models import Order, Task
 from django import template
 
 register = template.Library()
+
+
+# @register.filter()
+# def update_variable(value):
+#     data = value
+#     return data
+
+
+# register.filter('update_variable', update_variable)
+
+
+def query_order():
+    tasks_not_ended = Count('id', filter=~Q(
+        tasks__task_object__status__in=['SUCCESS', 'REVOKED', 'FAILURE']))
+    orders = Order.objects.prefetch_related(
+        'tasks').annotate(num_tasks=tasks_not_ended).order_by('-id').all().filter(~Q(status='Detenida')
+                                                                                  | Q(inicio=date.today())
+                                                                                  | Q(num_tasks__gt=0)
+                                                                                  )
+    return orders
+
+
+def update_items(request):
+    orders = query_order()
+    return render(request, 'tarea/order_table.html', {'orders': orders})
 
 
 @register.filter()
@@ -134,7 +160,7 @@ class TareaView(TemplateView):
 
         # Obtener Datos Resultados de Tareas
         tasks_not_ended = Count('id', filter=~Q(
-            tasks__task_object__status__in=['SUCCESS', 'REVOKED']))
+            tasks__task_object__status__in=['SUCCESS', 'REVOKED', 'FAILURE']))
         orders = Order.objects.prefetch_related(
             'tasks').annotate(num_tasks=tasks_not_ended).order_by('-id').all().filter(~Q(status='Detenida')
                                                                                       | Q(inicio=date.today())

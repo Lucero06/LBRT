@@ -70,7 +70,8 @@ textarea {
 
 }
 
-.on {
+.on,
+.success {
 	color: green;
 
 }
