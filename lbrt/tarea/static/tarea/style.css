@@ -76,7 +76,8 @@ textarea {
 
 }
 
-.off {
+.off,
+.failure {
 	color: red;
 
 }

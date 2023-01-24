@@ -1,39 +1,20 @@
-from django.contrib import messages
-from django.views.generic import TemplateView
-from django.shortcuts import render
-
-from datetime import datetime, timedelta, date
-from dateutil import tz
-from django.utils import timezone
+from datetime import date, datetime
 import pytz
-
-from . import nicehash
-import requests
-import json
-from django.db.models import Q
-from django.db.models import Count
-from django_celery_beat.models import CrontabSchedule, PeriodicTask, IntervalSchedule
-from django_celery_results.models import TaskResult
-
-from django.utils.decorators import method_decorator
-from django.contrib.admin.views.decorators import staff_member_required
-
 from decouple import config
-
-from tarea.models import Order, Task
-
 from django import template
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required
+from django.db.models import Count, Q
+from django.shortcuts import render
+from django.utils.decorators import method_decorator
+from django.views.generic import TemplateView
+from django_celery_beat.models import (IntervalSchedule,
+                                       PeriodicTask)
+from django_celery_results.models import TaskResult
+from tarea.models import Order, Task
+from . import nicehash
 
 register = template.Library()
-
-
-# @register.filter()
-# def update_variable(value):
-#     data = value
-#     return data
-
-
-# register.filter('update_variable', update_variable)
 
 
 def query_order():
@@ -47,14 +28,10 @@ def query_order():
     return orders
 
 
+@login_required
 def update_items(request):
     orders = query_order()
     return render(request, 'tarea/order_table.html', {'orders': orders})
-
-
-@register.filter()
-def query_filter(value, attr):
-    return value.filter(**eval(attr))
 
 
 @method_decorator(staff_member_required, name='dispatch')
@@ -155,7 +132,7 @@ class TareaView(TemplateView):
                     timezone).strftime('%H:%M')
         # print(schedules.count())
         # print(PeriodicTask.objects.values())
-        print(TaskResult.objects.values())
+        # print(TaskResult.objects.values())
         # tasks_results=TaskResult.objects.all().values('task_id').distinct()
 
         # Obtener Datos Resultados de Tareas

@@ -1,19 +1,17 @@
 import time
 
 from . import nicehash
-from django.core import serializers
 from .models import Order, Task
 from django_celery_results.models import TaskResult
-from django.db.models import Count, Q
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from lbrt.celery import app
 
-from celery import states
+from celery import states, Task as celerytask
 
 from decouple import config
 
-from datetime import datetime, date
+from datetime import datetime
 
 from celery.utils.log import get_task_logger
 
@@ -28,11 +26,26 @@ key = config('KEY_NC')
 secret = config('SECRET_NC')
 
 
+class BaseClassTask(celerytask):
+    def on_failure(self, exc, task_id, args, kwargs, einfo):
+        # exc (Exception) - The exception raised by the task.
+        # args (Tuple) - Original arguments for the task that failed.
+        # kwargs (Dict) - Original keyword arguments for the task that failed.
+        send_msg_updt_orders()
+        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message",
+                                                          "message": {
+                                                              'tarea': str(task_id),
+                                                              'log_time': str(datetime.now()),
+                                                              'status': 'off',
+                                                              'ERROR': str(exc)
+                                                          }})
+
+
 @app.task
 def stop_task(task_id):
     stop_order.update_state(task_id, state=states.SUCCESS)
     app.control.revoke(task_id, terminate=True)
-    orders()
+    send_msg_updt_orders()
 
 
 @app.task
@@ -55,6 +68,7 @@ def stop_order(order_id, private_api=None):
                 o = Order.objects.get(order_id=order_id)
                 o.status = 'Detenida'
                 o.save()
+                send_msg_updt_orders()
             else:
                 raise Exception('ERROR al detener la orden ' +
                                 str(delete_hp_order['errors']))
@@ -62,16 +76,14 @@ def stop_order(order_id, private_api=None):
         o = Order.objects.get(order_id=order_id)
         o.status = 'Detenida'
         o.save()
-        orders()
+        send_msg_updt_orders()
     return delete_hp_order
 
 
-def orders():
+def send_msg_updt_orders():
     async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message",
                                                       "message": {
-                                                          'update_orders': {
-                                                              'orders': ''
-                                                          }
+                                                          'update_orders': True
                                                       }})
 
 
@@ -142,11 +154,12 @@ def adjust_optimal_price(optimal_price, porcentaje_decimal):
 contador = 0
 
 
-@app.task(bind=True)
+@app.task(bind=True, base=BaseClassTask)
 def iniciar_orden(self, channel_name, pool_id, pool_algorithm, time_up, time_down, amount, limit_up, limit_down, porcentaje_decimal, name_tarea):
     global contador
-    # orders()
+    # send_msg_updt_orders()
     # return True
+    optimal_price_save = []
     public_api = nicehash.public_api('https://api2.nicehash.com', True)
     algorithms = public_api.get_algorithms()
     pool = pool_id
@@ -160,7 +173,6 @@ def iniciar_orden(self, channel_name, pool_id, pool_algorithm, time_up, time_dow
     print('tiempo u'+str(time_up))
     print('tiempo d'+str(time_down))
 
-    contador += 1
     optimal_price = get_optimal_price(pool_algorithm, public_api)
     optimal_price = adjust_optimal_price(optimal_price, porcentaje_decimal)
 
@@ -191,19 +203,40 @@ def iniciar_orden(self, channel_name, pool_id, pool_algorithm, time_up, time_dow
                                                               'order_id': order_id
                                                           }})
         print('SUCCESS orden creada')
+        optimal_price_save.append(optimal_price)
         o = Order(order_id=order_id, status='Iniciada')
         o.save()
         taskO = TaskResult.objects.get(task_id=task_id)
         t = Task(order=o, task_id=task_id, task_object=taskO)
         t.save()
-        orders()
+        send_msg_updt_orders()
 
     while True:
         # tiempo arriba
-        if (contador > 1):
-            update_limit(private_api, limit_up,
-                         order_id, algorithm, algorithms)
+        print(optimal_price_save)
+        print(contador)
+        if (contador > 1):  # primera vez no pasa
+            optimal_price = get_optimal_price(pool_algorithm, public_api)
+            if (optimal_price < optimal_price_save[0]*2.5):
+
+                optimal_price = adjust_optimal_price(
+                    optimal_price, porcentaje_decimal)
+
+                optimal_price_save.append(optimal_price)
+
+                update_limit(private_api, limit_up,
+                             order_id, algorithm, algorithms)
+            else:
+                async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message",
+                                                                  "message": {
+                                                                      'tarea': str(name_tarea),
+                                                                      'log_time': str(datetime.now()),
+                                                                      'status': 'on',
+                                                                      'msj': 'NO se hace update del limit porque el optimal price actual es mayor al anterior...',
+                                                                      'order_id': order_id
+                                                                  }})
         time_func(time_up)
         update_limit(private_api, limit_down,
                      order_id, algorithm, algorithms)
         time_func(time_down)
+        contador += 1

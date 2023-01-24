@@ -1,16 +1,11 @@
 import json
-from datetime import datetime, timedelta, date, timezone
-from dateutil import tz
-import time
+from datetime import datetime, timedelta
 
-from celery.result import AsyncResult
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
-from lbrt.celery import app
 from . import tasks
-from django_celery_beat.models import CrontabSchedule, PeriodicTask, IntervalSchedule
-from . import models
+from django_celery_beat.models import PeriodicTask, IntervalSchedule
 
 # from channels.consumer import SyncConsumer
 # from channels.exceptions import StopConsumer

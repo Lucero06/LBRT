@@ -11,6 +11,9 @@
         {% if order.tasks.all.0.task_object.status in "SUCCESS,REVOKED" %}
         class="success"
         {% endif %}
+        {% if order.tasks.all.0.task_object.status in "FAILURE" %}
+        class="failure"
+        {% endif %}
         >{{order.tasks.all.0.task_object.status}}</td>
         <td>
             <button onclick="stop_task('{{order.tasks.all.0.task_id}}')"
