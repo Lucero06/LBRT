@@ -1,5 +1,4 @@
-envchatbot
-envchatbot/
+envcripto/
 .env/
 __pycache__
 *.pyc
@@ -9,3 +8,4 @@ celerybeat-schedule
 logs/*
 static/*
 migrations/
+tests.py

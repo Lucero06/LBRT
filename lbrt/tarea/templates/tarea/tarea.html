@@ -47,7 +47,7 @@
     <tr>
         <td><label>*Pool:</label></td>
         <td>
-            <select id="pools">
+            <select id="pools" required>
                 {% comment %} <option value=""> Seleccione (nombre de pool - stratum host name - algoritmo) </option> {% endcomment %}
                 {% for pool in pools %}
                 <option value="{{pool.id}}///{{pool.algorithm}}///{{pool.stratumHostname}}">
@@ -61,31 +61,31 @@
     <tr>
         <td>*Amount</td>
         <td>
-            <input type="number" step="any" name="amount" id="amount" value="0.001"> BTC
+            <input type="number" step="any" name="amount" id="amount" value="0.001" required> BTC
         </td>
         
     </tr>
      <tr>
         <td><label>*Limit arriba</label> </td>
-        <td><input id="limit_up" type="number" step="any" name="limit_up" value="0.1"> THs</td>
+        <td><input id="limit_up" type="number" step="any" name="limit_up" value="0.1" required> THs</td>
         
     </tr> 
     <tr>
         <td><label>*Limit abajo</label> </td>
-        <td><input id="limit_down" type="number" step="any" name="limit_down" value="0.02"> THs</td>
+        <td><input id="limit_down" type="number" step="any" name="limit_down" value="0.02" required> THs</td>
         
     </tr> 
     <tr>
-        <td>Tiempo arriba</td>
+        <td>*Tiempo arriba</td>
         <td>
-            <input type="number" name="time_up" value="1" id="time_up"> Min
+            <input type="number" name="time_up" value="1" id="time_up" required> Min
         </td>
         
     </tr>
     <tr>
-        <td>Tiempo abajo</td>
+        <td>*Tiempo abajo</td>
         <td>
-            <input type="number" name="time_down" value="3" id="time_down"> Min
+            <input type="number" name="time_down" value="3" id="time_down" required> Min
         </td>
         
     </tr>
@@ -114,12 +114,11 @@ No<input type="radio" name="periodica" id="periodica_no" value="no" checked>
 <button id="btnstart">Crear tarea</button>
 </center>
 <br>
-<br><br>
 Log:<br>
 <span id="status"></span>
 
 <div id="info_blocks">
-    <textarea id="log-task" cols="150" rows="15" readonly></textarea>
+    <textarea id="log-task" rows="15" readonly></textarea>
     <br>
 </div>
 
@@ -154,7 +153,7 @@ Log:<br>
         );
     console.log(window.location.host );
     tareaSocket.onopen = function(e) {
-        document.querySelector('#status').innerHTML = ('Conexión ws abierta\n')    
+        document.querySelector('#status').innerHTML = ('Activo\n')    
     }
 
     tareaSocket.onmessage = function(e) {

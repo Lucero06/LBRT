@@ -25,6 +25,10 @@ td {
 	border: 2px solid black;
 }
 
+.ordenes {
+	min-width: 50%;
+}
+
 button {
 	border-radius: 10px;
 	font-weight: bold;
@@ -43,7 +47,7 @@ button:hover {
 }
 
 #log-task {
-	width: 100%;
+	width: 100% !important;
 }
 
 .balance-container {
