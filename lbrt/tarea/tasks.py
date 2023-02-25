@@ -6,7 +6,7 @@ from django_celery_results.models import TaskResult
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from lbrt.celery import app
-
+from .forms import Order_api
 from celery import states, Task as celerytask
 
 from decouple import config
@@ -88,15 +88,16 @@ def send_msg_updt_orders():
 
 
 def create_order(private_api,
-                 algorithm,
-                 optimal_price,
-                 limit_up,
-                 amount,
-                 pool,
-                 algorithms):
+                 order_data: Order_api):
     new_order = private_api.create_hashpower_order(
-        'EU', 'STANDARD', algorithm, optimal_price, limit_up, amount, pool, algorithms)
-    print(new_order)
+        'EU', 'STANDARD',
+        order_data['algorithm'],
+        order_data['price'],
+        order_data['limit'],
+        order_data['amount'],
+        order_data['pool_id'],
+        order_data['algorithms'])
+    # print(new_order)
     return new_order
 
 
@@ -118,6 +119,21 @@ def update_limit(private_api,
                 # stop_task(task_id)
         raise Exception('ERROR al actualizar limit ' +
                         str(update['errors']))
+    return update
+
+
+def update_price(
+        order_data: Order_api,
+        private_api=None,
+):
+    update = private_api.set_price_hashpower_order(
+        order_data['order_id'],
+        order_data['price'],
+        order_data['algorithm'],
+        order_data['algorithms']
+    )
+    if ('errors' in update):
+        pass
     return update
 
 
@@ -178,9 +194,16 @@ def iniciar_orden(self, channel_name, pool_id, pool_algorithm, time_up, time_dow
 
     # print(self.request)
     task_id = self.request.id
-
-    new_order = create_order(private_api, algorithm,
-                             optimal_price, limit_up, amount, pool, algorithms)
+    order_data = Order_api({
+        'pool_id': pool,
+        'algorithm': algorithm,
+        'algorithms': algorithms,
+        'limit': limit_up,
+        'amount': amount,
+        'price': optimal_price
+    })
+    order_data.is_valid()
+    new_order = create_order(private_api, order_data.cleaned_data)
     # new_order = {'id': 1}
     if ('errors' in new_order):
         async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message",

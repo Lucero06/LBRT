@@ -1,12 +1,11 @@
-# from django import forms
-# from celery import group
-# from .tasks import add
+from django import forms
 
-# class AddForm(forms.Form):
-#     a = forms.IntegerField()
-#     b = forms.IntegerField()
 
-#     number = forms.IntegerField(label='Number of tasks', min_value=1, max_value=100000)
-
-#     def create_calculate_task(self):
-#         return group(add.s(self.cleaned_data['a'], self.cleaned_data['b']) for i in range(self.cleaned_data['number']))()
+class Order_api(forms.Form):
+    pool_id = forms.CharField(required=False)
+    algorithm = forms.CharField(required=True)
+    algorithms = forms.JSONField(required=True)
+    amount = forms.CharField(required=False)
+    limit = forms.CharField(required=False)
+    order_id = forms.CharField(required=False)
+    price = forms.CharField(required=False)
