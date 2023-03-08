@@ -6,6 +6,6 @@ __pycache__
 db.sqlite3
 celerybeat-schedule
 logs/*
-static/*
 migrations/
 tests.py
+static/

@@ -1,0 +1,27 @@
+<!-- @format -->
+<div>
+	<div>Elige función</div>
+	<ul>
+		{% url 'tarea' as limit %}
+        {% url 'update_price' as price %}
+		<li 
+		{% if  request.path  ==  limit %}
+		class="active-nav"
+		{%else%}
+		class="" 
+		{%endif%} >
+		<a href="{% url 'tarea' %}">Limit</a>
+	</li>
+	<li 
+		{% if  request.path  ==  price %}
+		class="active-nav"
+		{%else%}
+		class="" 
+		{%endif%} >
+		<a href="{% url 'update_price' %}">Price</a>
+	</li>
+	</ul>
+</div>
+
+<hr>
+<br>

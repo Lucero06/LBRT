@@ -13,6 +13,7 @@ from django_celery_beat.models import (IntervalSchedule,
 from django_celery_results.models import TaskResult
 from tarea.models import Order, Task
 from . import nicehash
+from .forms import create_order
 
 register = template.Library()
 
@@ -35,18 +36,47 @@ def update_items(request):
 
 
 @method_decorator(staff_member_required, name='dispatch')
-class TareaView(TemplateView):
-
-    template_name = 'tarea/tarea.html'
-
-    # print(pools_on_first_page)
-    # pools=json.loads(pools_on_first_page)
+class UpdatePrice(TemplateView):
+    template_name = 'tarea/update_price.html'
 
     def get_context_data(self, **kwargs):
-        # Datos que se van a mostrar en la interfaz (template, vista) en la pantalla que ve el usuario
-
-        # Dato hora actual
+        orders = query_order()
+        if self.request.method == 'POST':
+            pass
+        else:
+            form = create_order(initial={'amount': 0.001, 'limit': 0.01})
         context = super().get_context_data(**kwargs)
+        context['wsport'] = config('WS_PORT')
+        context['form'] = form
+        context['orders'] = orders
+        hora = datetime.now().hour
+        context['hora'] = str(hora).zfill(2)
+        minuto = datetime.now()
+        # minuto=minuto+timedelta(minutes=1)
+        context['minuto'] = str(minuto.minute).zfill(2)
+        context['segundo'] = datetime.now().second
+        return context
+
+
+@method_decorator(staff_member_required, name='dispatch')
+class TareaView(TemplateView):
+
+    template_name = 'tarea/update_limit.html'
+
+    def get_context_data(self, **kwargs):
+
+        if self.request.method == 'POST':
+            # create a form instance and populate it with data from the request:
+            pass
+
+    # if a GET (or any other method) we'll create a blank form
+        else:
+            form = create_order()
+
+        context = super().get_context_data(**kwargs)
+        # Datos que se van a mostrar en la interfaz (template, vista) en la pantalla que ve el usuario
+        context['form'] = form
+        # Dato hora actual
         hora = datetime.now().hour
         context['hora'] = str(hora).zfill(2)
         minuto = datetime.now()

@@ -1,0 +1,75 @@
+<!-- @format -->
+
+{% extends 'base.html' %} {% block body %} {% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'tarea/style.css' %}" />
+<!-- ASDASD-->
+
+<h2>Crear orden que actualiza el precio</h2>
+<form class="form_orden" action="/your-name/" method="post">
+	{% csrf_token %} {{ form }}
+
+	<input type="hidden" value="update_price" id="task_type" />
+</form>
+
+{% include 'tarea/create_task.html' %} {%endblock %} {% block scripts%}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+<script src="{% static 'tarea/funciones.js' %}"></script>
+<script>
+	function scroll() {
+		document.querySelector('#log-task').scrollTop =
+			document.querySelector('#log-task').scrollHeight;
+	}
+
+	var wss_protocol = window.location.protocol == 'https:' ? 'wss://' : 'ws://';
+	var tareaSocket = new WebSocket(
+		wss_protocol + window.location.hostname + '{{wsport}}/ws/'
+	);
+	console.log(window.location.host);
+	tareaSocket.onopen = function (e) {
+		document.querySelector('#status').innerHTML = 'Activo\n';
+	};
+
+	tareaSocket.onmessage = function (e) {
+		var data = JSON.parse(e.data);
+
+		var message = data['message'];
+		console.log(message);
+		document.querySelector('#log-task').innerHTML += '\n\n';
+		if (message['update_orders']) {
+			$('#orders_body').html('').load("{% url 'get_orders' %}");
+		} else if (message['log_time']) {
+			document.querySelector('#log-task').innerHTML += message['log_time'];
+			document.querySelector('#log-task').innerHTML += ':';
+			document.querySelector('#log-task').innerHTML += '\n';
+			for (const att in message) {
+				console.log(att);
+				console.log(message[att]);
+				if (att != 'log_time') {
+					document.querySelector('#log-task').innerHTML += att;
+					document.querySelector('#log-task').innerHTML += ': ';
+					document.querySelector('#log-task').innerHTML += JSON.stringify(
+						message[att]
+					);
+					document.querySelector('#log-task').innerHTML += ' ';
+				}
+			}
+		} else {
+			document.querySelector('#log-task').innerHTML += JSON.stringify(message);
+		}
+		//document.querySelector('#log-task').innerHTML+=JSON.stringify(message);
+		document.querySelector('#status').innerHTML = message['status'];
+		document.querySelector('#status').className = message['status'];
+		scroll();
+		console.log(message);
+	};
+
+	tareaSocket.onclose = function (e) {
+		document.querySelector('#status').value +=
+			'Socket closed unexpectedly, please reload the page.\n';
+	};
+
+	window.setInterval(hora, 1000);
+</script>
+
+{%endblock %}

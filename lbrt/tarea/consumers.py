@@ -38,7 +38,7 @@ class TareaConsumer(WebsocketConsumer):
         amount = 0
         limit_up = 0
         limit_down = 0
-
+        limit = 0
         time_up = 0
         time_down = 0
         porcentaje = 0
@@ -78,7 +78,8 @@ class TareaConsumer(WebsocketConsumer):
             limit_up = message['params']['limit_up']
         if ('limit_down' in message['params']):
             limit_down = message['params']['limit_down']
-
+        if ('limit' in message['params']):
+            limit = message['params']['limit']
         # END NH
 
         # DATOS TAREA
@@ -110,9 +111,21 @@ class TareaConsumer(WebsocketConsumer):
 
         elif (tipo == 'add_tarea'):
             print('Crear tarea...')
+            tipo_tarea = message['tipo_tarea']
 
             # DATOS TAREA
-            tipo_nombre = 'Order_limit_up_down'
+            if (tipo_tarea == 'update_limit'):
+                exec_tarea = 'tarea.tasks.iniciar_orden'
+                name_tarea = 'order_limit_up_down'
+                argumentos = [str(self.channel_name), pool_id, pool_algorithm,
+                              time_up, time_down, amount, limit_up, limit_down, porcentaje_decimal]
+
+            elif (tipo_tarea == 'update_price'):
+                name_tarea = 'order_update_price'
+                exec_tarea = 'tarea.tasks.order_price'
+                argumentos = [str(self.channel_name), pool_id, pool_algorithm,
+                              amount, limit, porcentaje_decimal]
+            print(argumentos)
             intervalo = message['params']['intervalo']
             tipo_intervalo = message['params']['tipo_intervalo']
             inicio = message['params']['inicio']
@@ -149,48 +162,46 @@ class TareaConsumer(WebsocketConsumer):
             print(schedule)
 
             # CREAR TAREA
-            if (tipo_nombre == 'Order_limit_up_down'):
+            # name_tarea = 'order_limit_up_down'
+            regex = '^'+name_tarea+'(_[0-9]+)*$'
+            # print(regex)
+            periodic_tasks = PeriodicTask.objects.filter(
+                name__regex=regex).all()
+            num_periodic_tasks = len(periodic_tasks)
+            # print(num_periodic_tasks)
+            if (num_periodic_tasks > 0):
+                name_last_task = PeriodicTask.objects.filter(
+                    name__regex=regex).last().name
+                number_last_task = name_last_task.split('_')[-1]
+                if not (number_last_task.isnumeric()):
+                    number_last_task = 1
+                # print(number_last_task)
+                name_tarea = name_tarea+'_'+str(int(number_last_task)+1)
 
-                name_tarea = 'order_limit_up_down'
-                regex = '^'+name_tarea+'(_[0-9]+)*$'
-                # print(regex)
-                periodic_tasks = PeriodicTask.objects.filter(
-                    name__regex=regex).all()
-                num_periodic_tasks = len(periodic_tasks)
-                # print(num_periodic_tasks)
-                if (num_periodic_tasks > 0):
-                    name_last_task = PeriodicTask.objects.filter(
-                        name__regex=regex).last().name
-                    number_last_task = name_last_task.split('_')[-1]
-                    if not (number_last_task.isnumeric()):
-                        number_last_task = 1
-                    # print(number_last_task)
-                    name_tarea = name_tarea+'_'+str(int(number_last_task)+1)
-                print(name_tarea)
+            print(name_tarea)
+            argumentos.append(name_tarea)
 
-                if (periodica == 'si'):
-                    cp = PeriodicTask.objects.create(
-                        last_run_at=last_run_at,
-                        interval=schedule,
-                        name=name_tarea,
-                        task='tarea.tasks.iniciar_orden',
-                        args=json.dumps([str(self.channel_name), pool_id, pool_algorithm,
-                                        time_up, amount, limit_up, porcentaje_decimal, name_tarea])
-                    )
-                else:
-                    cp = PeriodicTask.objects.create(
-                        one_off=True,
-                        last_run_at=last_run_at,
-                        interval=schedule,
-                        name=name_tarea,
-                        task='tarea.tasks.iniciar_orden',
-                        args=json.dumps([str(self.channel_name), pool_id, pool_algorithm, time_up,
-                                        time_down, amount, limit_up, limit_down, porcentaje_decimal, name_tarea])
-                    )
+            if (periodica == 'si'):
+                cp = PeriodicTask.objects.create(
+                    last_run_at=last_run_at,
+                    interval=schedule,
+                    name=name_tarea,
+                    task=exec_tarea,
+                    args=json.dumps(argumentos)
+                )
+            else:
+                cp = PeriodicTask.objects.create(
+                    one_off=True,
+                    last_run_at=last_run_at,
+                    interval=schedule,
+                    name=name_tarea,
+                    task=exec_tarea,
+                    args=json.dumps(argumentos)
+                )
 
-                print('Tarea periodica creada: ')
-                print(cp)
-                print(cp.id)
+            print('Tarea creada: ')
+            print(cp)
+            print(cp.id)
 
     def tarea_message(self, event):  # enviar mensajes a usuario
         message = event['message']

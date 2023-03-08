@@ -206,13 +206,6 @@ def iniciar_orden(self, channel_name, pool_id, pool_algorithm, time_up, time_dow
     new_order = create_order(private_api, order_data.cleaned_data)
     # new_order = {'id': 1}
     if ('errors' in new_order):
-        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message",
-                                                          "message": {
-                                                              'tarea': str(name_tarea),
-                                                              'log_time': str(datetime.now()),
-                                                              'status': 'off',
-                                                              'ERROR': new_order['errors']
-                                                          }})
         raise Exception('ERROR al crear la orden '+str(new_order['errors']))
     else:
         contador += 1
@@ -263,3 +256,76 @@ def iniciar_orden(self, channel_name, pool_id, pool_algorithm, time_up, time_dow
                      order_id, algorithm, algorithms)
         time_func(time_down)
         contador += 1
+
+
+def adjust_optimalprice_downstep(optimal_price, algorithm, public_api):
+    buy_info = public_api.buy_info()
+    response = buy_info['miningAlgorithms']
+    # print(algorithm)
+    for alg in response:
+        # print(alg['name'])
+        # print(alg['down_step'])
+        if alg['name'].upper() == algorithm.upper():
+            down_step = alg['down_step']
+    optimal_price += down_step
+    return optimal_price
+
+
+@app.task(bind=True, base=BaseClassTask)
+def order_price(self, channel_name, pool_id, pool_algorithm, amount, limit, porcentaje_decimal, name_tarea):
+    public_api = nicehash.public_api('https://api2.nicehash.com', True)
+    algorithms = public_api.get_algorithms()
+    pool = pool_id
+    algorithm = pool_algorithm
+
+    private_api = nicehash.private_api(host,
+                                       organization_id,
+                                       key,
+                                       secret,
+                                       True)
+    optimal_price = get_optimal_price(pool_algorithm, public_api)
+    optimal_price = adjust_optimal_price(optimal_price, porcentaje_decimal)
+
+    task_id = self.request.id
+    order_data = Order_api({
+        'pool_id': pool,
+        'algorithm': algorithm,
+        'algorithms': algorithms,
+        'limit': limit,
+        'amount': amount,
+        'price': optimal_price
+    })
+
+    order_data.is_valid()
+    print(order_data.cleaned_data)
+    new_order = create_order(private_api, order_data.cleaned_data)
+    # new_order = {'id': 1}
+    if ('errors' in new_order):
+        raise Exception('ERROR al crear la orden '+str(new_order['errors']))
+    else:
+        order_id = new_order['id']
+        async_to_sync(channel_layer.group_send)("tarea", {"type": "tarea.message",
+                                                          "message": {
+                                                              'tarea': str(name_tarea),
+                                                              'log_time': str(datetime.now()),
+                                                              'status': 'on',
+                                                              'msj': 'Orden creada...',
+                                                              'order_id': order_id
+                                                          }})
+        print('SUCCESS orden creada')
+        o = Order(order_id=order_id, status='Iniciada')
+        o.save()
+        taskO = TaskResult.objects.get(task_id=task_id)
+        t = Task(order=o, task_id=task_id, task_object=taskO)
+        t.save()
+        send_msg_updt_orders()
+
+    while True:
+        time.sleep(600)
+        optimal_price = adjust_optimalprice_downstep(
+            optimal_price, algorithm, public_api)
+        print('price')
+        print(optimal_price)
+        update = private_api.set_price_hashpower_order(
+            order_id, optimal_price, algorithm, algorithms)
+        print(update)
