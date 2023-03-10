@@ -297,7 +297,7 @@ def order_price(self, channel_name, pool_id, pool_algorithm, amount, limit, porc
     })
 
     order_data.is_valid()
-    print(order_data.cleaned_data)
+    # print(order_data.cleaned_data)
     new_order = create_order(private_api, order_data.cleaned_data)
     # new_order = {'id': 1}
     if ('errors' in new_order):
@@ -322,10 +322,22 @@ def order_price(self, channel_name, pool_id, pool_algorithm, amount, limit, porc
 
     while True:
         time.sleep(600)
+        save_price = optimal_price
+
         optimal_price = adjust_optimalprice_downstep(
             optimal_price, algorithm, public_api)
+
         print('price')
         print(optimal_price)
         update = private_api.set_price_hashpower_order(
             order_id, optimal_price, algorithm, algorithms)
+        if ('errors' in update):
+            optimal_price = save_price
+            print(update['errors'][0])
+            for error in update['errors']:
+                if (error['code'] == 5058):
+                    o = Order.objects.get(order_id=order_id)
+                    o.status = 'Detenida'
+                    o.save()
+                    send_msg_updt_orders()
         print(update)
